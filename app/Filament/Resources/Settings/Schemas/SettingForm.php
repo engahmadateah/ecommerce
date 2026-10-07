@@ -46,6 +46,31 @@ class SettingForm
             Forms\Components\TextInput::make('footer_text')
                 ->label('Footer Text'),
 
+            Forms\Components\TextInput::make('shipping_fee')
+                ->label('Shipping fee (USD)')
+                ->numeric()->minValue(0)
+                ->helperText('Flat price per order. Leave empty to use the default (config/shop.php).'),
+
+            Forms\Components\TextInput::make('free_shipping_threshold')
+                ->label('Free shipping from (USD)')
+                ->numeric()->minValue(0)
+                ->helperText('Orders whose goods total (after discounts) reaches this amount ship free. Empty = never free.'),
+
+            Forms\Components\TextInput::make('tax_rate')
+                ->label('Tax / VAT rate (%)')
+                ->numeric()->minValue(0)->maxValue(100)
+                ->helperText('0 or empty = no tax.'),
+
+            Forms\Components\Select::make('tax_included')
+                ->label('Do your prices already include tax?')
+                ->options([1 => 'Yes, prices include tax (shown as "includes")', 0 => 'No, add tax at checkout'])
+                ->placeholder('Use default'),
+
+            Forms\Components\TextInput::make('tax_label')
+                ->label('Tax name')
+                ->maxLength(30)
+                ->placeholder('VAT'),
+
         ]);
     }
 }

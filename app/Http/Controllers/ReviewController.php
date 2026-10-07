@@ -25,6 +25,6 @@ class ReviewController extends Controller
         ]
     );
 
-    return back()->with('success', 'Review saved ⭐');
+    return back()->with('success', 'Review saved');
 }
 }

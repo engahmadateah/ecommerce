@@ -1,540 +1,99 @@
 <x-app-layout>
-
-    <div class="min-h-screen bg-gradient-to-br from-slate-100 via-orange-50 to-amber-100 py-14 overflow-hidden">
-
-        <!-- BACKGROUND -->
-        <div class="fixed inset-0 pointer-events-none overflow-hidden">
-
-            <div class="absolute top-[-250px] left-[-120px] w-[550px] h-[550px] bg-orange-400/20 blur-3xl rounded-full"></div>
-
-            <div class="absolute bottom-[-250px] right-[-120px] w-[550px] h-[550px] bg-yellow-400/20 blur-3xl rounded-full"></div>
-
-            <div class="absolute top-[30%] left-[45%] w-[300px] h-[300px] bg-rose-400/10 blur-3xl rounded-full"></div>
-
-        </div>
-
-        <div class="relative max-w-7xl mx-auto px-4 lg:px-8">
-
-            @php
-
-                $discountLabel = $coupon->type === 'percent'
-                    ? $coupon->value . '% OFF'
-                    : '$' . $coupon->value . ' OFF';
-
-                $level = $coupon->required_level ?? 'bronze';
-
-                $userLevel = auth()->user()->level ?? 'bronze';
-
-                $levels = [
-                    'bronze' => 1,
-                    'silver' => 2,
-                    'gold'   => 3,
-                ];
-
-                $canUse = $levels[$userLevel] >= $levels[$level];
-
-                $levelGradient = match($level) {
-
-                    'gold' => 'from-yellow-400 via-amber-400 to-yellow-600',
-
-                    'silver' => 'from-slate-300 via-gray-300 to-slate-500',
-
-                    default => 'from-orange-400 via-rose-400 to-pink-500',
-
-                };
-
-            @endphp
-
-            <div class="grid xl:grid-cols-[1.1fr_0.9fr] gap-10 items-start">
-
-                <!-- LEFT -->
-                <div class="relative overflow-hidden rounded-[40px] bg-white/75 backdrop-blur-2xl border border-white/40 shadow-[0_30px_90px_rgba(0,0,0,0.10)]">
-
-                    <!-- TOP IMAGE -->
-                    <div class="relative h-[420px] overflow-hidden">
-
-                        @if($coupon->image)
-
-                            <img src="{{ asset('storage/' . $coupon->image) }}"
-                                 class="w-full h-full object-cover scale-100 hover:scale-105 transition duration-700">
-
-                        @else
-
-                            <div class="w-full h-full bg-gradient-to-br from-orange-100 via-rose-100 to-yellow-100 flex items-center justify-center">
-
-                                <div class="relative">
-
-                                    <div class="absolute inset-0 bg-orange-400/30 blur-3xl rounded-full scale-150"></div>
-
-                                    <div class="relative w-44 h-44 rounded-[40px] bg-gradient-to-br from-orange-500 via-rose-500 to-pink-600 flex items-center justify-center shadow-[0_25px_60px_rgba(249,115,22,0.45)]">
-
-                                        <span class="text-8xl">
-                                            🎁
-                                        </span>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        @endif
-
-                        <!-- OVERLAY -->
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
-
-                        <!-- BADGES -->
-                        <div class="absolute top-6 left-6 flex items-center gap-3">
-
-                            <div class="px-5 py-2 rounded-2xl text-white text-xs font-black uppercase tracking-[0.25em] bg-gradient-to-r {{ $levelGradient }} shadow-2xl">
-
-                                {{ $level }}
-
-                            </div>
-
-                            <div class="px-5 py-2 rounded-2xl bg-white/90 backdrop-blur-xl shadow-xl">
-
-                                <span class="text-sm font-black text-emerald-600">
-                                    {{ $discountLabel }}
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                        <!-- FLOAT CARD -->
-                        <div class="absolute bottom-6 left-6 right-6">
-
-                            <div class="rounded-[30px] bg-white/10 border border-white/10 backdrop-blur-2xl p-6">
-
-                                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
-
-                                    <div>
-
-                                        <p class="text-sm uppercase tracking-[0.3em] text-orange-200 font-bold mb-2">
-                                            Exclusive Premium Coupon
-                                        </p>
-
-                                        <h1 class="text-4xl lg:text-5xl font-black text-white leading-tight">
-
-                                            {{ $coupon->title ?? $coupon->code }}
-
-                                        </h1>
-
-                                    </div>
-
-                                    <div class="flex items-center gap-3">
-
-                                        <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-xl flex items-center justify-center text-white shadow-2xl">
-
-                                            <i class="fa-solid fa-ticket text-xl"></i>
-
-                                        </div>
-
-                                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-r from-orange-500 to-rose-500 flex items-center justify-center text-white shadow-2xl shadow-orange-500/40">
-
-                                            <i class="fa-solid fa-crown text-xl"></i>
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <!-- CONTENT -->
-                    <div class="p-8 lg:p-10">
-
-                        <!-- DESCRIPTION -->
-                        <div class="mb-10">
-
-                            <div class="flex items-center gap-3 mb-5">
-
-                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-r from-orange-500 to-rose-500 text-white flex items-center justify-center shadow-xl shadow-orange-500/30">
-
-                                    <i class="fa-solid fa-sparkles"></i>
-
-                                </div>
-
-                                <div>
-
-                                    <p class="text-xs uppercase tracking-[0.3em] text-gray-400 font-bold">
-                                        About This Offer
-                                    </p>
-
-                                    <h2 class="text-2xl font-black text-gray-900">
-                                        Premium Shopping Reward
-                                    </h2>
-
-                                </div>
-
-                            </div>
-
-                            <p class="text-gray-600 leading-relaxed text-lg">
-
-                                {{ $coupon->description ?? 'Enjoy exclusive luxury shopping rewards and premium member discounts available for a limited time only.' }}
-
-                            </p>
-
-                        </div>
-
-                        <!-- HOW TO USE -->
-                        @if($coupon->how_to_use)
-
-                            <div class="rounded-[30px] bg-gradient-to-br from-white to-orange-50 border border-orange-100 p-7 mb-8 shadow-xl shadow-orange-100/40">
-
-                                <div class="flex items-center gap-4 mb-5">
-
-                                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-r from-orange-500 to-rose-500 text-white flex items-center justify-center shadow-2xl shadow-orange-500/30">
-
-                                        <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
-
-                                    </div>
-
-                                    <div>
-
-                                        <p class="text-xs uppercase tracking-[0.25em] text-gray-400 font-bold">
-                                            Quick Guide
-                                        </p>
-
-                                        <h3 class="text-2xl font-black text-gray-900">
-                                            How To Use
-                                        </h3>
-
-                                    </div>
-
-                                </div>
-
-                                <p class="text-gray-600 leading-relaxed whitespace-pre-line">
-
-                                    {{ $coupon->how_to_use }}
-
-                                </p>
-
-                            </div>
-
-                        @endif
-
-                        <!-- INFO -->
-                        <div class="grid sm:grid-cols-3 gap-5">
-
-                            @if($coupon->expires_at)
-
-                                <div class="rounded-[28px] bg-white border border-gray-100 p-6 shadow-lg shadow-black/[0.03]">
-
-                                    <div class="w-14 h-14 rounded-2xl bg-rose-100 text-rose-500 flex items-center justify-center mb-5">
-
-                                        <i class="fa-solid fa-clock text-xl"></i>
-
-                                    </div>
-
-                                    <p class="text-xs uppercase tracking-[0.25em] text-gray-400 font-bold mb-2">
-                                        Expires
-                                    </p>
-
-                                    <h4 class="text-lg font-black text-gray-900">
-
-                                        {{ $coupon->expires_at->format('M d, Y') }}
-
-                                    </h4>
-
-                                </div>
-
-                            @endif
-
-                            @if($coupon->usage_limit)
-
-                                <div class="rounded-[28px] bg-white border border-gray-100 p-6 shadow-lg shadow-black/[0.03]">
-
-                                    <div class="w-14 h-14 rounded-2xl bg-blue-100 text-blue-500 flex items-center justify-center mb-5">
-
-                                        <i class="fa-solid fa-layer-group text-xl"></i>
-
-                                    </div>
-
-                                    <p class="text-xs uppercase tracking-[0.25em] text-gray-400 font-bold mb-2">
-                                        Usage Limit
-                                    </p>
-
-                                    <h4 class="text-lg font-black text-gray-900">
-
-                                        {{ $coupon->usage_limit }}
-
-                                    </h4>
-
-                                </div>
-
-                            @endif
-
-                            <div class="rounded-[28px] bg-white border border-gray-100 p-6 shadow-lg shadow-black/[0.03]">
-
-                                <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-500 flex items-center justify-center mb-5">
-
-                                    <i class="fa-solid fa-chart-line text-xl"></i>
-
-                                </div>
-
-                                <p class="text-xs uppercase tracking-[0.25em] text-gray-400 font-bold mb-2">
-                                    Used Times
-                                </p>
-
-                                <h4 class="text-lg font-black text-gray-900">
-
-                                    {{ $coupon->used }}
-
-                                </h4>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
+@php
+    $discountLabel = $coupon->type === 'percent'
+        ? __(':value% off', ['value' => rtrim(rtrim((string) $coupon->value, '0'), '.')])
+        : __(':amount off', ['amount' => \App\Support\Currency::format($coupon->value)]);
+    $level = $coupon->required_level ?? 'bronze';
+    $userLevel = auth()->user()->level ?? 'bronze';
+    $levels = ['bronze' => 1, 'silver' => 2, 'gold' => 3];
+    $canUse = ($levels[$userLevel] ?? 1) >= ($levels[$level] ?? 1);
+    $tone = match ($level) {
+        'gold' => 'from-saffron-300 to-saffron-500 text-ink',
+        'silver' => 'from-[#e6e9f2] to-[#aab4cb] text-ink',
+        default => 'from-[#ff9a5a] to-coral-500 text-white',
+    };
+@endphp
+
+<div class="container-x pt-6 sm:pt-10">
+    <nav class="mb-6 flex items-center gap-2 text-sm text-mute" aria-label="Breadcrumb">
+        <a href="{{ route('home') }}" class="transition hover:text-ink">{{ __('Home') }}</a>
+        <i class="icon-[ph--caret-right] text-xs rtl:-scale-x-100"></i>
+        <a href="{{ route('coupons.index') }}" class="transition hover:text-ink">{{ __('Coupons') }}</a>
+    </nav>
+
+    <div class="grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
+        {{-- Offer --}}
+        <div class="overflow-hidden rounded-[2rem] border border-line bg-white shadow-soft">
+            <div class="relative flex min-h-64 flex-col justify-end bg-linear-to-br p-8 sm:p-10 {{ $tone }}">
+                @if ($coupon->image)
+                    <img loading="lazy" decoding="async" src="{{ asset('storage/'.$coupon->image) }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-30 mix-blend-multiply">
+                @else
+                    <i class="icon-[ph--ticket] absolute -end-6 -top-6 text-[12rem] opacity-15"></i>
+                @endif
+                <div class="relative">
+                    <span class="rounded-full bg-white/35 px-3 py-1 text-xs font-bold backdrop-blur">{{ __(ucfirst($level)) }}</span>
+                    <p class="display mt-4 !text-[clamp(2.8rem,6vw,4.6rem)]">{{ $discountLabel }}</p>
                 </div>
-
-                <!-- RIGHT -->
-                <div class="sticky top-28 space-y-8">
-
-                    <!-- CODE BOX -->
-                    <div class="relative overflow-hidden rounded-[35px] bg-gradient-to-br from-[#0f172a] via-[#111827] to-[#1e293b] p-8 shadow-[0_25px_80px_rgba(0,0,0,0.30)]">
-
-                        <div class="absolute top-0 right-0 w-[250px] h-[250px] bg-orange-500/10 blur-3xl rounded-full"></div>
-
-                        <div class="absolute bottom-0 left-0 w-[250px] h-[250px] bg-rose-500/10 blur-3xl rounded-full"></div>
-
-                        <div class="relative z-10">
-
-                            <div class="flex items-center justify-between mb-8">
-
-                                <div>
-
-                                    <p class="text-xs uppercase tracking-[0.3em] text-orange-200 font-bold mb-2">
-                                        Coupon Access
-                                    </p>
-
-                                    <h2 class="text-3xl font-black text-white">
-                                        Redeem Offer
-                                    </h2>
-
-                                </div>
-
-                                <div class="w-16 h-16 rounded-3xl bg-white/10 border border-white/10 backdrop-blur-xl flex items-center justify-center text-white shadow-2xl">
-
-                                    <i class="fa-solid fa-gift text-2xl"></i>
-
-                                </div>
-
-                            </div>
-
-                            <!-- NEW PREMIUM CODE BOX -->
-                            <div class="rounded-[30px] bg-white/10 border border-white/10 backdrop-blur-2xl p-6 mb-6">
-
-                                <div class="flex items-center justify-between mb-4">
-
-                                    <p class="text-sm uppercase tracking-[0.25em] text-orange-200 font-bold">
-                                        Coupon Code
-                                    </p>
-
-                                    <div class="flex items-center gap-2 text-emerald-300 text-sm font-semibold">
-
-                                        <i class="fa-solid fa-bolt"></i>
-
-                                        Instant Copy
-
-                                    </div>
-
-                                </div>
-
-                                <div class="flex items-center gap-4">
-
-                                    <!-- CODE -->
-                                    <div class="flex-1 h-20 rounded-[24px]
-                                                bg-black/30
-                                                border border-white/10
-                                                backdrop-blur-xl
-                                                flex items-center px-6 overflow-hidden">
-
-                                        <span class="text-2xl lg:text-3xl font-black tracking-[0.35em] text-white truncate">
-
-                                            {{ $coupon->code }}
-
-                                        </span>
-
-                                    </div>
-
-                                    <!-- COPY BUTTON -->
-                                    <button
-                                        onclick="
-                                            navigator.clipboard.writeText('{{ $coupon->code }}');
-                                            this.innerHTML = '<i class=\'fa-solid fa-check\'></i>';
-                                            setTimeout(() => {
-                                                this.innerHTML = '<i class=\'fa-solid fa-copy\'></i>';
-                                            }, 2000);
-                                        "
-                                        class="group shrink-0 w-20 h-20 rounded-[24px]
-                                               bg-gradient-to-r from-orange-500 via-rose-500 to-pink-600
-                                               text-white text-2xl
-                                               flex items-center justify-center
-                                               shadow-[0_20px_50px_rgba(249,115,22,0.45)]
-                                               hover:scale-105
-                                               transition duration-300">
-
-                                        <i class="fa-solid fa-copy group-hover:scale-110 transition duration-300"></i>
-
-                                    </button>
-
-                                </div>
-
-                                <p class="text-gray-400 text-sm mt-4 leading-relaxed">
-
-                                    Copy the code and paste it into your cart to automatically apply the discount.
-
-                                </p>
-
-                            </div>
-
-                            <!-- STATUS -->
-                            @auth
-
-                                @if($canUse)
-
-                                    <div class="rounded-2xl bg-emerald-500/15 border border-emerald-400/20 p-5 flex items-center gap-4">
-
-                                        <div class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-xl shadow-emerald-500/30">
-
-                                            <i class="fa-solid fa-check"></i>
-
-                                        </div>
-
-                                        <div>
-
-                                            <h3 class="font-black text-white">
-                                                Coupon Available
-                                            </h3>
-
-                                            <p class="text-sm text-emerald-200">
-                                                Your account can redeem this offer.
-                                            </p>
-
-                                        </div>
-
-                                    </div>
-
-                                @else
-
-                                    <div class="rounded-2xl bg-red-500/15 border border-red-400/20 p-5 flex items-center gap-4">
-
-                                        <div class="w-12 h-12 rounded-2xl bg-red-500 text-white flex items-center justify-center shadow-xl shadow-red-500/30">
-
-                                            <i class="fa-solid fa-lock"></i>
-
-                                        </div>
-
-                                        <div>
-
-                                            <h3 class="font-black text-white">
-                                                Level Required
-                                            </h3>
-
-                                            <p class="text-sm text-red-200">
-                                                Requires {{ strtoupper($level) }} membership.
-                                            </p>
-
-                                        </div>
-
-                                    </div>
-
-                                @endif
-
-                            @else
-
-                                <a href="/login"
-                                   class="group flex items-center justify-center gap-3 w-full h-16 rounded-2xl bg-gradient-to-r from-orange-500 via-rose-500 to-pink-600 text-white text-lg font-black shadow-2xl shadow-orange-500/30 hover:scale-[1.02] transition duration-300">
-
-                                    <i class="fa-solid fa-right-to-bracket group-hover:translate-x-1 transition duration-300"></i>
-
-                                    Login To Redeem
-
-                                </a>
-
-                            @endauth
-
-                        </div>
-
-                    </div>
-
-                    <!-- MEMBERSHIP -->
-                    <div class="rounded-[35px] bg-white/80 backdrop-blur-2xl border border-white/40 p-8 shadow-[0_20px_70px_rgba(0,0,0,0.08)]">
-
-                        <div class="flex items-center gap-4 mb-6">
-
-                            <div class="w-16 h-16 rounded-3xl bg-gradient-to-r {{ $levelGradient }} text-white flex items-center justify-center shadow-2xl">
-
-                                <i class="fa-solid fa-crown text-2xl"></i>
-
-                            </div>
-
-                            <div>
-
-                                <p class="text-xs uppercase tracking-[0.25em] text-gray-400 font-bold">
-                                    Membership Access
-                                </p>
-
-                                <h2 class="text-2xl font-black text-gray-900">
-                                    {{ strtoupper($level) }} Tier
-                                </h2>
-
-                            </div>
-
-                        </div>
-
-                        <p class="text-gray-600 leading-relaxed mb-6">
-
-                            This premium reward is designed for loyal members with elevated shopping status and exclusive account benefits.
-
-                        </p>
-
-                        <div class="space-y-4">
-
-                            <div class="flex items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-100">
-
-                                <span class="font-semibold text-gray-700">
-                                    Discount
-                                </span>
-
-                                <span class="font-black text-emerald-600">
-                                    {{ $discountLabel }}
-                                </span>
-
-                            </div>
-
-                            <div class="flex items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-100">
-
-                                <span class="font-semibold text-gray-700">
-                                    Access Level
-                                </span>
-
-                                <span class="font-black uppercase text-gray-900">
-                                    {{ $level }}
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
             </div>
 
+            <div class="p-8 sm:p-10">
+                <p class="text-sm font-bold text-cobalt-600">{{ __('Exclusive Premium Coupon') }}</p>
+                <h1 class="h1 mt-2">{{ $coupon->title ?? $coupon->code }}</h1>
+                <h2 class="h3 mt-8">{{ __('Premium Shopping Reward') }}</h2>
+                <p class="mt-2 leading-relaxed text-mute">{{ $coupon->description ?? __('Enjoy exclusive luxury shopping rewards and premium member discounts available for a limited time only.') }}</p>
+
+                @if ($coupon->how_to_use)
+                    <h3 class="h3 mt-8">{{ __('How To Use') }}</h3>
+                    <p class="mt-2 leading-relaxed text-mute">{{ $coupon->how_to_use }}</p>
+                @endif
+
+                <dl class="mt-8 grid gap-4 border-t border-line pt-8 sm:grid-cols-3">
+                    @if ($coupon->expires_at)
+                        <div><dt class="text-sm text-mute">{{ __('Expires') }}</dt><dd class="mt-1 font-display text-lg font-bold">{{ $coupon->expires_at->format('M d, Y') }}</dd></div>
+                    @endif
+                    @if ($coupon->usage_limit)
+                        <div><dt class="text-sm text-mute">{{ __('Usage Limit') }}</dt><dd class="mt-1 font-display text-lg font-bold">{{ $coupon->usage_limit }}</dd></div>
+                    @endif
+                    <div><dt class="text-sm text-mute">{{ __('Used Times') }}</dt><dd class="mt-1 font-display text-lg font-bold">{{ $coupon->used }}</dd></div>
+                </dl>
+            </div>
         </div>
 
-    </div>
+        {{-- Redeem --}}
+        <aside class="space-y-4 lg:sticky lg:top-28 lg:self-start">
+            <div class="panel">
+                <p class="text-sm font-bold text-cobalt-600">{{ __('Coupon Access') }}</p>
+                <h2 class="h2 mt-1">{{ __('Redeem Offer') }}</h2>
 
+                <p class="mt-6 text-sm text-mute">{{ __('Coupon Code') }}</p>
+                <div class="mt-2 flex items-center gap-2 rounded-2xl border-2 border-dashed border-ink/25 bg-fog p-2 ps-5">
+                    <span class="flex-1 font-mono text-xl font-bold tracking-widest">{{ $coupon->code }}</span>
+                    <button type="button" onclick="copyText(@js($coupon->code), this)" data-copied-text="{{ __('Copied') }}" class="btn btn-ink btn-sm"><i class="icon-[ph--copy] text-lg"></i>{{ __('Instant Copy') }}</button>
+                </div>
+                <p class="mt-3 text-sm leading-relaxed text-mute">{{ __('Copy the code and paste it into your cart to automatically apply the discount.') }}</p>
+
+                @auth
+                    @if ($canUse)
+                        <div class="alert alert-ok mt-6"><i class="icon-[ph--check-circle-fill] mt-0.5 shrink-0 text-lg"></i><div><b class="block">{{ __('Coupon Available') }}</b>{{ __('Your account can redeem this offer.') }}</div></div>
+                        <a href="/cart" class="btn btn-brand btn-lg btn-block mt-4">{{ __('Cart') }}<i class="icon-[ph--arrow-right] text-xl rtl:-scale-x-100"></i></a>
+                    @else
+                        <div class="alert alert-err mt-6"><i class="icon-[ph--lock-simple] mt-0.5 shrink-0 text-lg"></i><div><b class="block">{{ __('Level Required') }}</b>{{ __('Requires :level membership.', ['level' => __(ucfirst($level))]) }}</div></div>
+                    @endif
+                @else
+                    <a href="/login" class="btn btn-brand btn-lg btn-block mt-6">{{ __('Login To Redeem') }}</a>
+                @endauth
+            </div>
+
+            <div class="rounded-[2rem] bg-ink p-7 text-white">
+                <p class="text-sm font-bold text-cobalt-300">{{ __('Membership Access') }}</p>
+                <h2 class="h2 mt-1">{{ __(ucfirst($level)) }} {{ __('Tier') }}</h2>
+                <p class="mt-3 text-sm leading-relaxed text-white/65">{{ __('This premium reward is designed for loyal members with elevated shopping status and exclusive account benefits.') }}</p>
+                <div class="mt-5 flex flex-wrap gap-2">
+                    <span class="badge bg-white/10 text-white">{{ __('Discount') }}: {{ $discountLabel }}</span>
+                    <span class="badge bg-white/10 text-white">{{ __('Access Level') }}: {{ __(ucfirst($level)) }}</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
 </x-app-layout>

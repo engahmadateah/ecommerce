@@ -2,7 +2,7 @@
     <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
 
         <!-- Logo -->
-        <a href="/" class="text-xl font-bold">🛍️ MyStore</a>
+        <a href="/" class="text-xl font-bold"><i class="icon-[ph--shopping-bag] me-1"></i> MyStore</a>
 
         <!-- Links -->
         <div class="hidden md:flex items-center gap-6">
@@ -29,11 +29,11 @@
                 <!-- Dropdown -->
                 <div class="relative">
                     <button onclick="toggleDropdown()" class="bg-gray-200 px-3 py-1 rounded-lg">
-                        ⚙️
+                        <i class="icon-[ph--gear]"></i>
                     </button>
 
                     <div id="dropdown"
-                         class="hidden absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg overflow-hidden">
+                         class="hidden absolute end-0 mt-2 w-40 bg-white shadow-lg rounded-lg overflow-hidden">
 
                         <a href="/profile"
                            class="block px-4 py-2 hover:bg-gray-100">
@@ -42,7 +42,7 @@
 
                         <form method="POST" action="/logout">
                             @csrf
-                            <button class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500">
+                            <button class="w-full text-start px-4 py-2 hover:bg-gray-100 text-red-500">
                                 Logout
                             </button>
                         </form>

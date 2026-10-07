@@ -27,6 +27,6 @@ class ContactController extends Controller
             'message' => $request->message,
         ]);
     
-        return back()->with('success', 'Message sent successfully 🎉');
+        return back()->with('success', 'Message sent successfully');
     }
 }

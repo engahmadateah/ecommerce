@@ -10,11 +10,21 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::query();
+        $query = Product::query()->published();
 
         // 🔍 Search
         if ($request->search) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $term = (string) $request->search;
+
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'like', '%'.$term.'%');
+
+                // Arabic (non-English) words are searched in the translations too.
+                // Only for non-ASCII text, so the JSON keys ("name", "ar") never match by accident.
+                if (preg_match('/[^\x00-\x7F]/', $term)) {
+                    $q->orWhere('translations', 'like', '%'.$term.'%');
+                }
+            });
         }
 
         // 📂 Filter by Category
@@ -30,16 +40,32 @@ class ProductController extends Controller
             ->latest()
             ->paginate(8);
 
-        $categories = Category::all();
+        $categories = Category::cachedAll();
 
-        return view('products.index', compact('products', 'categories'));
+        // "Today's deals" rail on the first, unfiltered page of the home page only.
+        $deals = collect();
+
+        if (! $request->search && ! $request->category && $request->integer('page', 1) === 1) {
+            $deals = Product::published()->with('category')
+                ->whereNotNull('discount_price')
+                ->whereColumn('discount_price', '<', 'price')
+                ->withAvg('reviews', 'rating')
+                ->withCount('reviews')
+                ->latest()
+                ->take(8)
+                ->get();
+        }
+
+        return view('products.index', compact('products', 'categories', 'deals'));
     }
 
     public function show(Product $product)
     {
+        abort_unless($product->is_published, 404);
+
         $product->load(['reviews.user']);
 
-        $alsoBought = Product::whereIn('products.id', function ($query) use ($product) {
+        $alsoBought = Product::published()->whereIn('products.id', function ($query) use ($product) {
             $query->select('oi2.product_id')
                 ->from('order_items as oi1')
                 ->join('order_items as oi2', 'oi1.order_id', '=', 'oi2.order_id')
@@ -48,6 +74,7 @@ class ProductController extends Controller
         })
         ->select(
             'products.id',
+            'products.slug',
             'products.name',
             'products.price',
             'products.image'
@@ -62,7 +89,7 @@ class ProductController extends Controller
 
     public function search(Request $request)
     {
-        $products = Product::with('category')
+        $products = Product::published()->with('category')
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
 
@@ -71,6 +98,7 @@ class ProductController extends Controller
                 $q->where(function ($query) use ($request) {
                     $query->where('name', 'like', '%' . $request->search . '%')
                           ->orWhere('description', 'like', '%' . $request->search . '%')
+                          ->when(preg_match('/[^\x00-\x7F]/', (string) $request->search), fn ($w) => $w->orWhere('translations', 'like', '%' . $request->search . '%'))
                           ->orWhereHas('category', function ($cat) use ($request) {
                               $cat->where('name', 'like', '%' . $request->search . '%');
                           });
@@ -99,7 +127,7 @@ class ProductController extends Controller
     }
     public function deals()
 {
-    $products = Product::with('category')
+    $products = Product::published()->with('category')
         ->whereNotNull('discount_price')
         ->whereColumn('discount_price', '<', 'price') // مهم
         ->withAvg('reviews', 'rating')

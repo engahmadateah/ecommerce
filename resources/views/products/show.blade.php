@@ -1,761 +1,303 @@
 <x-app-layout>
-
-<div class="min-h-screen relative overflow-hidden bg-[#f3f6fb]">
-
-    <!-- ULTRA PREMIUM BACKGROUND -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none">
-
-        <!-- mesh -->
-        <div class="absolute inset-0 opacity-[0.03]"
-             style="background-image:
-             linear-gradient(to right, black 1px, transparent 1px),
-             linear-gradient(to bottom, black 1px, transparent 1px);
-             background-size: 90px 90px;">
-        </div>
-
-        <!-- glows -->
-        <div class="absolute top-[-250px] left-[-150px] w-[750px] h-[750px] bg-sky-300/20 blur-3xl rounded-full"></div>
-
-        <div class="absolute bottom-[-250px] right-[-150px] w-[750px] h-[750px] bg-orange-300/20 blur-3xl rounded-full"></div>
-
-        <div class="absolute top-[40%] left-[40%] w-[500px] h-[500px] bg-pink-200/10 blur-3xl rounded-full"></div>
-
-        <!-- vignette -->
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.95),transparent_50%)]"></div>
-
-    </div>
-
-    <div class="relative max-w-[1650px] mx-auto px-5 lg:px-10 py-14">
-
-        <!-- PRODUCT -->
-        <div class="grid xl:grid-cols-[1.1fr_0.9fr] gap-10 items-start">
-
-            <!-- IMAGE SIDE -->
-            <div class="space-y-6">
-
-                <!-- IMAGE CARD -->
-                <div class="relative rounded-[50px]
-                            overflow-hidden
-                            border border-white/70
-                            bg-white/70
-                            backdrop-blur-3xl
-                            shadow-[0_40px_120px_rgba(15,23,42,0.08)]">
-
-                    <!-- overlay -->
-                    <div class="absolute inset-0 bg-gradient-to-br from-sky-100/30 via-transparent to-orange-100/20 z-10"></div>
-
-                    <!-- image -->
-                    <div class="relative overflow-hidden">
-
-                        <img src="{{ asset('storage/'.$product->image) }}"
-                             class="w-full h-[820px] object-cover hover:scale-105 transition duration-[2000ms]">
-
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent"></div>
-
-                    </div>
-
-                    <!-- floating controls -->
-                    <div class="absolute top-6 left-6 z-30 flex flex-col gap-4">
-
-                        @if($product->stock <= 5)
-
-                            <div class="px-6 py-3 rounded-full
-                                        bg-red-500 text-white
-                                        font-black text-sm
-                                        shadow-[0_15px_40px_rgba(239,68,68,0.45)]">
-
-                                ⚠️ Only {{ $product->stock }} Left
-
-                            </div>
-
-                        @endif
-
-                        @if($product->discount_price)
-
-                            <div class="px-6 py-3 rounded-full
-                                        bg-gradient-to-r from-orange-500 to-red-500
-                                        text-white font-black text-sm
-                                        shadow-[0_15px_40px_rgba(249,115,22,0.45)]">
-
-                                🔥 Limited Offer
-
-                            </div>
-
-                        @endif
-
-                    </div>
-
-                    <!-- floating action -->
-                    <div class="absolute top-6 right-6 z-30">
-
-                        <button
-                            onclick="toggleWishlist({{ $product->id }}, this)"
-                            class="w-16 h-16 rounded-[24px]
-                                   bg-white/90 backdrop-blur-2xl
-                                   border border-white
-                                   shadow-[0_15px_50px_rgba(15,23,42,0.12)]
-                                   flex items-center justify-center
-                                   text-2xl hover:scale-110 transition duration-300">
-
-                            ❤️
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- INFO SIDE -->
-            <div class="relative rounded-[50px]
-                        border border-white/70
-                        bg-white/75
-                        backdrop-blur-3xl
-                        shadow-[0_40px_120px_rgba(15,23,42,0.06)]
-                        p-8 lg:p-12 overflow-hidden">
-
-                <!-- glow -->
-                <div class="absolute top-0 right-0 w-[350px] h-[350px] bg-sky-200/20 blur-3xl rounded-full"></div>
-
-                <div class="relative z-10">
-
-                    <!-- CATEGORY -->
-                    <div class="mb-6">
-
-                        <span class="inline-flex items-center gap-3
-                                     px-5 py-3 rounded-2xl
-                                     bg-sky-50 border border-sky-100
-                                     text-sky-700
-                                     uppercase tracking-[0.2em]
-                                     text-xs font-black">
-
-                            <i class="fa-solid fa-gem"></i>
-
-                            {{ $product->category->name ?? 'Luxury Product' }}
-
-                        </span>
-
-                    </div>
-
-                    <!-- TITLE -->
-                    <h1 class="text-6xl xl:text-7xl
-                               leading-[0.9]
-                               tracking-[-0.06em]
-                               font-black text-gray-900 mb-7">
-
-                        {{ $product->name }}
-
-                    </h1>
-
-                    <!-- SUB -->
-                    <p class="text-xl text-gray-500 leading-relaxed mb-8">
-
-                        Crafted with premium quality and designed for people
-                        who appreciate luxury, elegance, and modern lifestyle.
-
-                    </p>
-
-                    <!-- STATS -->
-                    @php
-                        $avg = round($product->reviews->avg('rating'), 1);
-                        $count = $product->reviews->count();
-                    @endphp
-
-                    <div class="flex flex-wrap items-center gap-5 mb-10">
-
-                        <!-- rating -->
-                        <div class="flex items-center gap-3
-                                    px-5 py-4 rounded-3xl
-                                    bg-[#fafafa]
-                                    border border-gray-100">
-
-                            <div class="flex text-yellow-400 text-xl">
-
-                                {!! str_repeat('⭐', round($avg)) !!}
-
-                            </div>
-
-                            <span class="font-bold text-gray-700">
-
-                                {{ $avg }} Rating
-
-                            </span>
-
-                        </div>
-
-                        <!-- reviews -->
-                        <div class="px-5 py-4 rounded-3xl
-                                    bg-[#fafafa]
-                                    border border-gray-100
-                                    font-bold text-gray-700">
-
-                            {{ $count }} Reviews
-
-                        </div>
-
-                        <!-- stock -->
-                        <div class="px-5 py-4 rounded-3xl
-                                    bg-[#fafafa]
-                                    border border-gray-100
-                                    font-bold text-gray-700">
-
-                            {{ $product->stock }} In Stock
-
-                        </div>
-
-                    </div>
-
-                    <!-- PRICE -->
-                    <div class="flex items-end gap-5 mb-12">
-
-                        @if($product->discount_price)
-
-                            <div>
-
-                                <p class="text-2xl text-gray-400 line-through mb-2">
-
-                                    ${{ $product->price }}
-
-                                </p>
-
-                                <h2 class="text-7xl font-black text-gray-900 leading-none">
-
-                                    ${{ $product->discount_price }}
-
-                                </h2>
-
-                            </div>
-
-                            <div class="mb-3 px-5 py-3 rounded-2xl
-                                        bg-emerald-50 border border-emerald-100
-                                        text-emerald-600 font-black">
-
-                                Save
-                                ${{ number_format($product->price - $product->discount_price, 0) }}
-
-                            </div>
-
-                        @else
-
-                            <h2 class="text-7xl font-black text-gray-900 leading-none">
-
-                                ${{ $product->price }}
-
-                            </h2>
-
-                        @endif
-
-                    </div>
-
-                    <!-- FEATURES -->
-                    <div class="grid grid-cols-2 gap-5 mb-12">
-
-                        <div class="rounded-[32px]
-                                    bg-[#fafafa]
-                                    border border-gray-100
-                                    p-6">
-
-                            <div class="w-14 h-14 rounded-2xl
-                                        bg-sky-100
-                                        flex items-center justify-center
-                                        mb-5">
-
-                                <i class="fa-solid fa-shield-halved text-sky-600 text-xl"></i>
-
-                            </div>
-
-                            <h4 class="font-black text-gray-900 mb-2">
-
-                                Secure Checkout
-
-                            </h4>
-
-                            <p class="text-sm text-gray-500 leading-relaxed">
-
-                                100% encrypted premium payment system.
-
-                            </p>
-
-                        </div>
-
-                        <div class="rounded-[32px]
-                                    bg-[#fafafa]
-                                    border border-gray-100
-                                    p-6">
-
-                            <div class="w-14 h-14 rounded-2xl
-                                        bg-orange-100
-                                        flex items-center justify-center
-                                        mb-5">
-
-                                <i class="fa-solid fa-truck-fast text-orange-500 text-xl"></i>
-
-                            </div>
-
-                            <h4 class="font-black text-gray-900 mb-2">
-
-                                Fast Shipping
-
-                            </h4>
-
-                            <p class="text-sm text-gray-500 leading-relaxed">
-
-                                Express delivery with premium packaging.
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <!-- DESCRIPTION -->
-                    <div class="rounded-[36px]
-                                bg-[#fafafa]
-                                border border-gray-100
-                                p-7 mb-12">
-
-                        <h3 class="text-2xl font-black text-gray-900 mb-4">
-
-                            Product Details
-
-                        </h3>
-
-                        <p class="text-gray-600 text-lg leading-relaxed">
-
-                            {{ $product->description }}
-
-                        </p>
-
-                    </div>
-
-                    <!-- ACTIONS -->
-                    <div class="flex flex-col sm:flex-row gap-5">
-
-                        <!-- add -->
-                        <form method="POST"
-                              action="/cart/add/{{ $product->id }}"
-                              class="flex-1">
-
-                            @csrf
-
-                            <button class="group relative overflow-hidden
-                                           w-full h-20 rounded-[30px]
-                                           bg-gradient-to-r
-                                           from-sky-500
-                                           via-indigo-500
-                                           to-blue-600
-                                           text-white font-black text-xl
-                                           shadow-[0_25px_80px_rgba(59,130,246,0.35)]
-                                           hover:scale-[1.02]
-                                           transition duration-300">
-
-                                <span class="relative z-10 flex items-center justify-center gap-4">
-
-                                    <i class="fa-solid fa-cart-plus
-                                              group-hover:rotate-12
-                                              transition duration-300"></i>
-
-                                    Add To Cart
-
-                                </span>
-
-                                <div class="absolute inset-0
-                                            bg-white/20
-                                            translate-x-[-100%]
-                                            group-hover:translate-x-[100%]
-                                            transition duration-700">
-                                </div>
-
-                            </button>
-
-                        </form>
-
-                        <!-- buy now -->
-                        <button class="h-20 px-10 rounded-[30px]
-                                       bg-white border border-gray-200
-                                       text-gray-900 font-black text-lg
-                                       shadow-xl hover:scale-[1.02]
-                                       transition">
-
-                            Buy Now
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- REVIEWS -->
-        <div class="grid xl:grid-cols-[0.8fr_1.2fr] gap-10 mt-16">
-
-            <!-- ADD REVIEW -->
-            @auth
-
-            <div>
-
-                <div class="rounded-[45px]
-                            border border-white/70
-                            bg-white/75
-                            backdrop-blur-3xl
-                            shadow-[0_30px_100px_rgba(15,23,42,0.06)]
-                            p-8"
-                     x-data="ratingComponent({{ $product->id }})">
-
-                    <h2 class="text-4xl font-black text-gray-900 mb-7">
-
-                        Write Review
-
-                    </h2>
-
-                    <!-- stars -->
-                    <div class="flex gap-3 text-5xl mb-8 cursor-pointer">
-
-                        <template x-for="star in 5">
-
-                            <span
-                                @mouseenter="hover = star"
-                                @mouseleave="hover = 0"
-                                @click="rate(star)"
-                                :class="(hover >= star || rating >= star)
-                                    ? 'text-yellow-400 scale-110'
-                                    : 'text-gray-300'"
-                                class="transition duration-200">
-
-                                ⭐
-
-                            </span>
-
-                        </template>
-
-                    </div>
-
-                    <textarea x-model="comment"
-                              class="w-full h-48 rounded-[30px]
-                                     border border-gray-200
-                                     bg-[#fafafa]
-                                     p-6 outline-none
-                                     text-lg
-                                     focus:ring-4 focus:ring-sky-100"
-                              placeholder="Share your premium experience..."></textarea>
-
-                    <button @click="submit()"
-                            class="mt-6 w-full h-16 rounded-[24px]
-                                   bg-gradient-to-r
-                                   from-emerald-500
-                                   to-green-600
-                                   text-white font-black text-lg
-                                   shadow-[0_20px_60px_rgba(16,185,129,0.35)]
-                                   hover:scale-[1.02]
-                                   transition">
-
-                        Submit Review
-
-                    </button>
-
-                </div>
-
-            </div>
-
-            @endauth
-
-            <!-- REVIEW LIST -->
-            <div>
-
-                <div class="rounded-[45px]
-                            border border-white/70
-                            bg-white/75
-                            backdrop-blur-3xl
-                            shadow-[0_30px_100px_rgba(15,23,42,0.06)]
-                            p-8 lg:p-10">
-
-                    <div class="flex items-center justify-between mb-10">
-
-                        <div>
-
-                            <h2 class="text-5xl font-black text-gray-900 mb-2">
-
-                                Customer Reviews
-
-                            </h2>
-
-                            <p class="text-gray-500 text-lg">
-
-                                Trusted opinions from buyers
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <div class="space-y-6">
-
-                        @forelse($product->reviews as $review)
-
-                            <div class="rounded-[32px]
-                                        bg-[#fafafa]
-                                        border border-gray-100
-                                        p-7">
-
-                                <div class="flex items-start justify-between mb-5">
-
-                                    <div class="flex items-center gap-4">
-
-                                        <div class="w-14 h-14 rounded-2xl
-                                                    bg-gradient-to-br
-                                                    from-sky-500
-                                                    to-indigo-600
-                                                    text-white font-black
-                                                    flex items-center justify-center">
-
-                                            {{ strtoupper(substr($review->user->name, 0, 1)) }}
-
-                                        </div>
-
-                                        <div>
-
-                                            <h4 class="font-black text-lg text-gray-900">
-
-                                                {{ $review->user->name }}
-
-                                            </h4>
-
-                                            <p class="text-sm text-gray-400">
-
-                                                Verified Purchase
-
-                                            </p>
-
-                                        </div>
-
-                                    </div>
-
-                                    <div class="text-yellow-400 text-lg">
-
-                                        {!! str_repeat('⭐', $review->rating) !!}
-
-                                    </div>
-
-                                </div>
-
-                                <p class="text-gray-600 leading-relaxed text-lg">
-
-                                    {{ $review->comment }}
-
-                                </p>
-
-                            </div>
-
-                        @empty
-
-                            <div class="text-center py-24">
-
-                                <div class="text-8xl mb-6">
-                                    💬
-                                </div>
-
-                                <h3 class="text-4xl font-black text-gray-900 mb-4">
-
-                                    No Reviews Yet
-
-                                </h3>
-
-                                <p class="text-gray-500 text-lg">
-
-                                    Be the first to review this luxury product.
-
-                                </p>
-
-                            </div>
-
-                        @endforelse
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- ALSO BOUGHT -->
-        @if($alsoBought->count())
-
-        <div class="mt-24">
-
-            <div class="mb-10">
-
-                <h2 class="text-6xl font-black tracking-[-0.05em] text-gray-900 mb-3">
-
-                    You May Also Like
-
-                </h2>
-
-                <p class="text-xl text-gray-500">
-
-                    Curated premium recommendations for you
-
-                </p>
-
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
-
-                @foreach($alsoBought as $item)
-
-                    <a href="{{ route('products.show', $item->id) }}"
-                       class="group rounded-[40px]
-                              overflow-hidden
-                              border border-white/70
-                              bg-white/75
-                              backdrop-blur-3xl
-                              shadow-[0_25px_90px_rgba(15,23,42,0.06)]
-                              hover:-translate-y-4
-                              hover:shadow-[0_40px_120px_rgba(59,130,246,0.14)]
-                              transition duration-700">
-
-                        <!-- image -->
-                        <div class="relative overflow-hidden">
-
-                            <img src="{{ asset('storage/'.$item->image) }}"
-                                 class="w-full h-80 object-cover
-                                        group-hover:scale-110
-                                        transition duration-[1800ms]">
-
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
-
-                        </div>
-
-                        <!-- content -->
-                        <div class="p-7">
-
-                            <h3 class="text-2xl font-black text-gray-900 mb-3 line-clamp-1">
-
-                                {{ $item->name }}
-
-                            </h3>
-
-                            <p class="text-4xl font-black text-gray-900 mb-5">
-
-                                ${{ $item->price }}
-
-                            </p>
-
-                            @if(isset($item->frequency))
-
-                                <div class="inline-flex items-center gap-2
-                                            px-4 py-3 rounded-2xl
-                                            bg-emerald-50 border border-emerald-100
-                                            text-emerald-600 font-bold text-sm">
-
-                                    🔥 Bought {{ $item->frequency }} times together
-
-                                </div>
-
-                            @endif
-
-                        </div>
-
-                    </a>
-
-                @endforeach
-
-            </div>
-
-        </div>
-
-        @endif
-
-    </div>
-
-</div>
-
-<!-- REVIEW SCRIPT -->
-<script>
-
-function ratingComponent(productId) {
-
-    return {
-
-        rating: 0,
-        hover: 0,
-        comment: '',
-
-        rate(value) {
-
-            this.rating = value;
-
-        },
-
-        submit() {
-
-            if (!this.rating) {
-
-                alert('Please select rating');
-                return;
-
-            }
-
-            fetch(`/products/${productId}/review`, {
-
-                method: 'POST',
-
-                headers: {
-
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json'
-
-                },
-
-                body: JSON.stringify({
-
-                    rating: this.rating,
-                    comment: this.comment
-
-                })
-
-            }).then(() => {
-
-                location.reload();
-
-            });
-
-        }
-
+@php
+    $seoPrice = number_format($product->currentPrice(), 2, '.', '');
+    $seoReviews = $product->reviews;
+    $seoJson = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Product',
+        'name' => $product->localized_name,
+        'description' => \Illuminate\Support\Str::limit(strip_tags((string) $product->localized_description), 300),
+        'image' => array_map(fn ($i) => asset('storage/'.$i), $product->all_images),
+        'sku' => $product->sku ?: (string) $product->id,
+        'offers' => [
+            '@type' => 'Offer',
+            'url' => route('products.show', $product),
+            'priceCurrency' => 'USD',
+            'price' => $seoPrice,
+            'availability' => $product->stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        ],
+    ];
+    if ($seoReviews->count() > 0) {
+        $seoJson['aggregateRating'] = [
+            '@type' => 'AggregateRating',
+            'ratingValue' => round($seoReviews->avg('rating'), 1),
+            'reviewCount' => $seoReviews->count(),
+        ];
     }
+@endphp
+@section('seo_title', $product->localized_name.' | '.(\App\Models\Setting::current()?->site_name ?: config('app.name')))
+@section('seo_description', \Illuminate\Support\Str::limit(strip_tags((string) $product->localized_description), 155))
+@if($product->image)
+    @section('seo_image', asset('storage/'.$product->image))
+@endif
+@section('seo_type', 'product')
+@push('seo')
+    <script type="application/ld+json">{!! json_encode($seoJson, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}</script>
+@endpush
 
-}
+@php
+    $images = $product->all_images;
+    $name = $product->localized_name;
+    $price = (float) $product->price;
+    $hasDeal = $product->discount_price !== null && (float) $product->discount_price < $price;
+    $now = $product->currentPrice();
+    $off = $hasDeal && $price > 0 ? (int) round((1 - $now / $price) * 100) : 0;
+    $reviews = $product->reviews;
+    $reviewCount = $reviews->count();
+    $avg = $reviewCount ? round($reviews->avg('rating'), 1) : 0;
+    $dist = $reviews->groupBy('rating')->map->count();
+    $soldOut = $product->stock <= 0;
+    $low = ! $soldOut && $product->stock <= 5;
+    $wished = auth()->check() && auth()->user()->wishlist->contains($product->id);
+    $variantOptions = $product->activeVariants()->orderBy('sort_order')->orderBy('id')->get();
+    $returnDays = (int) config('shop.returns.days', 14);
+@endphp
 
-function toggleWishlist(productId, el) {
+<div class="container-x pt-6 sm:pt-10">
 
-    fetch(`/wishlist/${productId}`, {
+    {{-- Breadcrumb --}}
+    <nav class="mb-6 flex items-center gap-2 text-sm text-mute" aria-label="Breadcrumb">
+        <a href="{{ route('home') }}" class="transition hover:text-ink">{{ __('Home') }}</a>
+        <i class="icon-[ph--caret-right] text-xs rtl:-scale-x-100"></i>
+        @if ($product->category)
+            <a href="{{ route('home', ['category' => $product->category_id]) }}" class="transition hover:text-ink">{{ $product->category->localized_name }}</a>
+            <i class="icon-[ph--caret-right] text-xs rtl:-scale-x-100"></i>
+        @endif
+        <span class="truncate font-semibold text-ink">{{ $name }}</span>
+    </nav>
 
-        method: 'POST',
+    <div class="grid gap-10 lg:grid-cols-[1.1fr_.9fr] lg:gap-16">
 
-        headers: {
+        {{-- ───────── Gallery ───────── --}}
+        <div data-gallery class="min-w-0 lg:sticky lg:top-28 lg:self-start">
+            <div class="relative">
+                <div class="swiper tile rounded-[2rem]" data-gallery-main>
+                    <div class="swiper-wrapper">
+                        @forelse ($images as $img)
+                            <div class="swiper-slide">
+                                <div class="swiper-zoom-container aspect-[4/5]">
+                                    <img src="{{ asset('storage/'.$img) }}" alt="{{ $name }}" class="h-full w-full object-cover" @if ($loop->first) data-product-main-img fetchpriority="high" @endif>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="swiper-slide"><div class="grid aspect-[4/5] place-items-center text-8xl text-mute/30"><i class="icon-[ph--image]"></i></div></div>
+                        @endforelse
+                    </div>
+                    <div class="swiper-pagination !bottom-4 sm:!hidden"></div>
+                </div>
 
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json'
+                <div class="pointer-events-none absolute start-4 top-4 z-10 flex flex-col items-start gap-1.5">
+                    @if ($hasDeal)<span class="badge badge-sale text-[13px]" dir="ltr">-{{ $off }}%</span>@endif
+                    @if ($soldOut)
+                        <span class="badge badge-ink text-[13px]">{{ __('Out of stock') }}</span>
+                    @elseif ($low)
+                        <span class="badge badge-deal text-[13px]">{{ __('Only :count left', ['count' => $product->stock]) }}</span>
+                    @endif
+                </div>
 
-        }
+                @if (count($images) > 1)
+                    <div class="absolute inset-x-4 top-1/2 z-10 hidden -translate-y-1/2 justify-between sm:flex">
+                        <button type="button" data-prev class="nav-btn" aria-label="{{ __('Previous') }}"><i class="icon-[ph--arrow-left] rtl:-scale-x-100"></i></button>
+                        <button type="button" data-next class="nav-btn" aria-label="{{ __('Next') }}"><i class="icon-[ph--arrow-right] rtl:-scale-x-100"></i></button>
+                    </div>
+                @endif
+            </div>
 
-    })
-    .then(res => res.json())
-    .then(data => {
+            @if (count($images) > 1)
+                <div class="swiper mt-3" data-gallery-thumbs>
+                    <div class="swiper-wrapper">
+                        @foreach ($images as $img)
+                            <div class="swiper-slide !w-20 cursor-pointer overflow-hidden rounded-2xl bg-tile">
+                                <img src="{{ asset('storage/'.$img) }}" alt="" class="aspect-square h-full w-full object-cover" loading="lazy">
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        </div>
 
-        el.innerHTML = data.status === 'added'
-            ? '❤️'
-            : '🤍';
+        {{-- ───────── Details ───────── --}}
+        <div class="min-w-0">
+            @if ($product->category)
+                <a href="{{ route('home', ['category' => $product->category_id]) }}" class="badge badge-info text-[13px]">{{ $product->category->localized_name }}</a>
+            @endif
 
-    });
+            <h1 class="h1 mt-4">{{ $name }}</h1>
 
-}
+            <div class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+                @if ($reviewCount)
+                    <a href="#reviews" class="inline-flex items-center gap-2 font-semibold">
+                        <x-stars :rating="round($avg)" class="text-lg" />
+                        <span>{{ $avg }}</span>
+                        <span class="font-normal text-mute underline underline-offset-4">{{ $reviewCount }} {{ __('Reviews') }}</span>
+                    </a>
+                @endif
+                @if ($soldOut)
+                    <span class="badge badge-muted">{{ __('Out of stock') }}</span>
+                @else
+                    <span class="badge badge-ok"><i class="icon-[ph--check-circle-fill]"></i>{{ $low ? __('Only :count left', ['count' => $product->stock]) : __('In stock') }}</span>
+                @endif
+            </div>
 
-</script>
+            <div class="mt-7 flex flex-wrap items-end gap-x-4 gap-y-2">
+                <p class="font-display text-5xl font-bold leading-none">@money($now)</p>
+                @if ($hasDeal)
+                    <s class="pb-1 text-xl text-mute">@money($price)</s>
+                    <span class="badge badge-sale mb-1.5 text-[13px]">{{ __('Save') }} <bdi>@money($price - $now)</bdi></span>
+                @endif
+            </div>
 
+            @if ($product->localized_description)
+                <p class="mt-7 max-w-prose whitespace-pre-line leading-relaxed text-mute">{{ $product->localized_description }}</p>
+            @endif
+
+            {{-- Buy box --}}
+            <form method="POST" action="/cart/add/{{ $product->id }}" data-cart-form data-success-text="{{ __('Added to cart') }}" class="mt-8">
+                @csrf
+
+                @if ($variantOptions->isNotEmpty())
+                    <fieldset x-data="{ selected: null }" class="mb-6">
+                        <legend class="mb-3 text-sm font-bold">{{ __('Choose an option') }}</legend>
+                        <div class="flex flex-wrap gap-2.5">
+                            @foreach ($variantOptions as $variant)
+                                @php $variant->setRelation('product', $product); @endphp
+                                <label class="relative cursor-pointer {{ $variant->stock <= 0 ? 'cursor-not-allowed opacity-45' : '' }}">
+                                    <input type="radio" name="variant_id" value="{{ $variant->id }}" x-model.number="selected" class="peer sr-only" @disabled($variant->stock <= 0) required>
+                                    <span class="flex min-w-24 flex-col rounded-2xl border border-line bg-white px-4 py-3 transition peer-checked:border-cobalt-500 peer-checked:bg-cobalt-50 peer-checked:ring-4 peer-checked:ring-cobalt-500/15 peer-focus-visible:outline-2 peer-focus-visible:outline-cobalt-500 hover:border-ink">
+                                        <span class="text-[15px] font-bold">{{ $variant->name }}</span>
+                                        <span class="mt-0.5 text-[13px] text-mute">
+                                            @money($variant->currentPrice())
+                                            @if ($variant->stock <= 0) · {{ __('Out of stock') }} @endif
+                                        </span>
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </fieldset>
+                @endif
+
+                <div class="flex flex-col gap-3 sm:flex-row">
+                    <button type="submit" class="btn btn-brand btn-lg sm:flex-1" @disabled($soldOut)>
+                        <i class="icon-[ph--handbag] text-xl"></i>{{ $soldOut ? __('Out of stock') : __('Add To Cart') }}
+                    </button>
+                    @unless ($soldOut)
+                        <button type="submit" data-buy-now class="btn btn-ink btn-lg">{{ __('Buy Now') }}</button>
+                    @endunless
+                    @auth
+                        <button type="button" data-wishlist="{{ $product->id }}" aria-pressed="{{ $wished ? 'true' : 'false' }}"
+                                data-added-text="{{ __('Saved to your wishlist') }}" data-removed-text="{{ __('Removed from your wishlist') }}" data-error-text="{{ __('Something went wrong. Please try again.') }}"
+                                class="btn btn-line btn-lg w-full text-2xl sm:w-14 sm:px-0" aria-label="{{ __('Wishlist') }}">
+                            <i class="w-off icon-[ph--heart]"></i><i class="w-on icon-[ph--heart-fill] text-coral-500"></i>
+                        </button>
+                    @endauth
+                </div>
+            </form>
+
+            <ul class="mt-8 grid gap-3 border-t border-line pt-8 sm:grid-cols-3">
+                <li class="flex items-start gap-3"><span class="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-cobalt-50 text-xl text-cobalt-600"><i class="icon-[ph--shield-check]"></i></span><span class="text-[13px] leading-snug"><b class="block text-sm">{{ __('Secure Checkout') }}</b><span class="text-mute">{{ __('100% encrypted premium payment system.') }}</span></span></li>
+                <li class="flex items-start gap-3"><span class="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-cobalt-50 text-xl text-cobalt-600"><i class="icon-[ph--truck]"></i></span><span class="text-[13px] leading-snug"><b class="block text-sm">{{ __('Fast Shipping') }}</b><span class="text-mute">{{ __('Express delivery with premium packaging.') }}</span></span></li>
+                <li class="flex items-start gap-3"><span class="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-cobalt-50 text-xl text-cobalt-600"><i class="icon-[ph--arrow-counter-clockwise]"></i></span><span class="text-[13px] leading-snug"><b class="block text-sm">{{ __('Returns') }}</b><span class="text-mute">{{ __('Easy :days-day returns', ['days' => $returnDays]) }}</span></span></li>
+            </ul>
+        </div>
+    </div>
+
+    {{-- ───────── Reviews ───────── --}}
+    <section id="reviews" class="mt-20 grid gap-10 border-t border-line pt-16 lg:grid-cols-[22rem_1fr] lg:gap-16">
+        <div class="space-y-6">
+            <div>
+                <h2 class="h2">{{ __('Customer Reviews') }}</h2>
+                @if ($reviewCount)
+                    <div class="mt-5 flex items-end gap-4">
+                        <span class="font-display text-6xl font-bold leading-none">{{ $avg }}</span>
+                        <div class="pb-1"><x-stars :rating="round($avg)" class="text-xl" /><p class="mt-1 text-sm text-mute">{{ $reviewCount }} {{ __('Reviews') }}</p></div>
+                    </div>
+                    <div class="mt-5 space-y-2">
+                        @foreach ([5, 4, 3, 2, 1] as $star)
+                            @php $n = (int) ($dist[$star] ?? 0); $pct = $reviewCount ? round($n / $reviewCount * 100) : 0; @endphp
+                            <div class="flex items-center gap-3 text-sm">
+                                <span class="inline-flex w-8 items-center gap-1 font-semibold">{{ $star }}<i class="icon-[ph--star-fill] text-saffron-500"></i></span>
+                                <span class="h-2 flex-1 overflow-hidden rounded-full bg-tile"><span class="block h-full rounded-full bg-saffron-500" style="width: {{ $pct }}%"></span></span>
+                                <span class="w-8 text-end text-mute">{{ $n }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="mt-2 text-mute">{{ __('Trusted opinions from buyers') }}</p>
+                @endif
+            </div>
+
+            @auth
+                <div class="panel-flat"
+                     x-data="{
+                        rating: 0, hover: 0, comment: '', busy: false,
+                        async submit() {
+                            if (!this.rating) { window.toast(@js(__('Please select a rating')), 'error'); return; }
+                            this.busy = true;
+                            try {
+                                const res = await fetch('/products/{{ $product->id }}/review', {
+                                    method: 'POST',
+                                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                                    body: JSON.stringify({ rating: this.rating, comment: this.comment }),
+                                });
+                                if (!res.ok) throw new Error('review');
+                                location.reload();
+                            } catch (e) {
+                                window.toast(@js(__('Something went wrong. Please try again.')), 'error');
+                                this.busy = false;
+                            }
+                        }
+                     }">
+                    <h3 class="h3">{{ __('Write Review') }}</h3>
+                    <div class="mt-3 flex gap-1 text-3xl" @mouseleave="hover = 0">
+                        <template x-for="star in 5" :key="star">
+                            <button type="button" @mouseenter="hover = star" @click="rating = star" :aria-label="star" class="transition hover:scale-110"
+                                    :class="(hover || rating) >= star ? 'text-saffron-500' : 'text-line'"><i class="icon-[ph--star-fill]"></i></button>
+                        </template>
+                    </div>
+                    <textarea x-model="comment" rows="3" class="field mt-4" placeholder="{{ __('Share your premium experience...') }}"></textarea>
+                    <button type="button" @click="submit()" :disabled="busy" class="btn btn-ink btn-block mt-4">{{ __('Submit Review') }}</button>
+                </div>
+            @endauth
+        </div>
+
+        <div class="space-y-4">
+            @forelse ($reviews as $review)
+                <article class="rounded-3xl border border-line bg-white p-6">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <span class="grid h-11 w-11 place-items-center rounded-full bg-cobalt-50 font-display text-base font-bold text-cobalt-700">{{ mb_strtoupper(mb_substr($review->user->name, 0, 1)) }}</span>
+                            <div>
+                                <h3 class="text-[15px] font-bold">{{ $review->user->name }}</h3>
+                                <p class="inline-flex items-center gap-1 text-xs font-semibold text-mint-600"><i class="icon-[ph--seal-check-fill]"></i>{{ __('Verified Purchase') }}</p>
+                            </div>
+                        </div>
+                        <x-stars :rating="$review->rating" />
+                    </div>
+                    @if ($review->comment)
+                        <p class="mt-4 leading-relaxed text-mute">{{ $review->comment }}</p>
+                    @endif
+                </article>
+            @empty
+                <div class="grid place-items-center rounded-3xl border border-dashed border-line px-6 py-16 text-center">
+                    <span class="grid h-16 w-16 place-items-center rounded-full bg-cobalt-50 text-3xl text-cobalt-500"><i class="icon-[ph--chat-circle-dots]"></i></span>
+                    <h3 class="h3 mt-5">{{ __('No Reviews Yet') }}</h3>
+                    <p class="mt-1 text-mute">{{ __('Be the first to review this luxury product.') }}</p>
+                </div>
+            @endforelse
+        </div>
+    </section>
+
+    {{-- ───────── You may also like ───────── --}}
+    @if ($alsoBought->count())
+        <section class="mt-20 border-t border-line pt-16">
+            <h2 class="h2">{{ __('You May Also Like') }}</h2>
+            <p class="lead mt-2">{{ __('Curated premium recommendations for you') }}</p>
+            <div class="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4">
+                @foreach ($alsoBought as $item)
+                    <x-product-card :product="$item" :index="$loop->index" />
+                @endforeach
+            </div>
+        </section>
+    @endif
+</div>
 </x-app-layout>

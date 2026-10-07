@@ -2,142 +2,128 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Exceptions\CheckoutException;
 use App\Models\Product;
-use App\Models\Coupon;
 use App\Models\SavedItem;
 use App\Services\CartService;
+use App\Services\Checkout\CouponService;
+use App\Services\Checkout\PricingService;
+use App\Support\Money;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class CartController extends Controller
 {
-    protected $cart;
-
-    public function __construct(CartService $cart)
-    {
-        $this->cart = $cart;
+    public function __construct(
+        private readonly CartService $cart,
+        private readonly CouponService $coupons,
+        private readonly PricingService $pricing,
+    ) {
     }
 
-    // ➕ Add to cart
-    public function add(Product $product)
+    public function index(): View
     {
-        $this->cart->add($product);
+        $cart = $this->cart->getCart();
+        $user = auth()->user();
 
-        return back()->with('success', 'Added to cart');
+        try {
+            $coupon = $this->coupons->resolve(session('coupon_id'), $user);
+        } catch (CheckoutException $e) {
+            session()->forget('coupon_id');
+            session()->flash('error', $e->getMessage());
+            $coupon = null;
+        }
+
+        $quote = $this->pricing->quote($cart, $coupon);
+
+        return view('cart.index', [
+            'cart'        => $cart,
+            'total'       => Money::fromCents($quote->subtotalCents),
+            'discount'    => Money::fromCents($quote->discountCents),
+            'final'       => Money::fromCents($quote->totalCents),
+            'shipping'    => Money::fromCents($quote->shippingCents),
+            'tax'         => Money::fromCents($quote->taxCents),
+            'taxIncluded' => Money::fromCents($quote->taxIncludedCents),
+            'taxLabel'    => $quote->taxLabel,
+            'freeShippingRemaining' => $quote->freeShippingRemainingCents !== null
+                ? Money::fromCents($quote->freeShippingRemainingCents)
+                : null,
+            'coupon'      => $coupon,
+            'suggestions' => Product::query()
+                ->boughtTogetherWith(collect($cart)->pluck('product_id'))
+                ->take(4)
+                ->get(),
+            'autoCoupon'  => $this->coupons->suggest($user),
+        ]);
     }
 
-    // ❌ Remove item
-    public function remove($id)
+    public function add(Request $request, Product $product): RedirectResponse
+    {
+        $variantId = $request->integer('variant_id') ?: null;
+
+
+        if (! $variantId && $product->activeVariants()->exists()) {
+            return redirect()->route('products.show', $product)
+                ->with('error', 'Please choose an option (size, colour, ...) first.');
+        }
+
+        return $this->attempt(fn () => $this->cart->add($product, 1, $variantId), 'Added to cart');
+    }
+
+    public function remove(string $id): RedirectResponse
     {
         $this->cart->remove($id);
 
         return back()->with('success', 'Item removed');
     }
 
-    // ➖ Decrease quantity
-    public function decrease($id)
+    public function decrease(string $id): RedirectResponse
     {
         $this->cart->decrease($id);
 
         return back();
     }
 
-    // 🔄 Update quantity
-    public function update(Request $request, $id)
+    public function updateQuantity(string $id, Request $request): RedirectResponse
     {
-        $this->cart->update($id, $request->quantity);
+        $data = $request->validate(['action' => ['required', 'in:increase,decrease']]);
 
-        return back();
+        return $data['action'] === 'increase'
+            ? $this->attempt(fn () => $this->cart->increase($id))
+            : $this->attempt(fn () => $this->cart->decrease($id));
     }
 
-    // 🛒 Show cart
-    public function index()
+    public function applyCoupon(Request $request): RedirectResponse
     {
-        $cart = $this->cart->getCart();
-        $cartIds = collect($cart)->keys();
+        $request->validate(['code' => ['required', 'string']]);
 
-        // 🔥 Suggestions
-        $suggestions = Product::whereIn('id', function ($query) use ($cartIds) {
-            $query->select('oi2.product_id')
-                ->from('order_items as oi1')
-                ->join('order_items as oi2', 'oi1.order_id', '=', 'oi2.order_id')
-                ->whereIn('oi1.product_id', $cartIds)
-                ->whereNotIn('oi2.product_id', $cartIds);
-        })
-        ->take(4)
-        ->get();
+        $coupon = $this->coupons->findByCode($request->string('code')->toString());
 
-        // 💰 Total
-        $total = $this->cart->total();
-
-        // 🎁 Auto coupon suggestion (لسه بدون فلترة level)
-        $coupon = Coupon::where(function ($q) {
-                $q->whereNull('expires_at')
-                  ->orWhere('expires_at', '>', now());
-            })
-            ->whereColumn('used', '<', 'usage_limit')
-            ->first();
-
-        return view('cart.index', [
-            'cart' => $cart,
-            'total' => $total,
-            'suggestions' => $suggestions,
-            'autoCoupon' => $coupon,
-        ]);
-    }
-
-    // 🎁 Apply coupon (🔥 WITH LEVEL SYSTEM)
-    public function applyCoupon(Request $request)
-    {
-        $request->validate([
-            'code' => 'required|string'
-        ]);
-
-        $coupon = Coupon::where('code', $request->code)->first();
-
-        if (!$coupon) {
+        if (! $coupon) {
             return back()->with('error', 'Invalid coupon');
         }
 
-        // ⛔ Expired
-        if ($coupon->expires_at && $coupon->expires_at < now()) {
-            return back()->with('error', 'Coupon expired');
+        try {
+            $this->coupons->validate($coupon, $request->user());
+        } catch (CheckoutException $e) {
+            return back()->with('error', $e->getMessage());
         }
 
-        // ⛔ Limit reached
-        if ($coupon->usage_limit && $coupon->used >= $coupon->usage_limit) {
-            return back()->with('error', 'Coupon limit reached');
-        }
-
-        // ⭐ LEVEL SYSTEM
-        $levels = [
-            'bronze' => 1,
-            'silver' => 2,
-            'gold'   => 3,
-        ];
-
-        $userLevel = auth()->user()->level ?? 'bronze';
-        $couponLevel = $coupon->required_level ?? 'bronze';
-
-        if (($levels[$userLevel] ?? 1) < ($levels[$couponLevel] ?? 1)) {
-            return back()->with('error', 'This coupon is not available for your level');
-        }
-
-        // ✅ Apply coupon
         session(['coupon_id' => $coupon->id]);
 
         return back()->with('success', 'Coupon applied successfully');
     }
 
-    // ❤️ Save for later
-    public function saveForLater($id)
+    public function saveForLater(string $id): RedirectResponse
     {
-        if (!auth()->check()) {
-            return back()->with('error', 'Login required');
+        if (! ctype_digit($id)) {
+            return back()->with('error', 'This item cannot be saved for later.');
         }
 
         SavedItem::firstOrCreate([
-            'user_id' => auth()->id(),
-            'product_id' => $id
+            'user_id'    => auth()->id(),
+            'product_id' => (int) $id,
         ]);
 
         $this->cart->remove($id);
@@ -145,30 +131,14 @@ class CartController extends Controller
         return back()->with('success', 'Saved for later');
     }
 
-    // 🔄 Update quantity buttons
-    public function updateQuantity($id, Request $request, CartService $cart)
+    private function attempt(callable $action, ?string $successMessage = null): RedirectResponse
     {
-        $action = $request->action;
-
-        $cartItems = $cart->getCart();
-
-        if (!isset($cartItems[$id])) {
-            return back();
+        try {
+            $action();
+        } catch (CheckoutException $e) {
+            return back()->with('error', $e->getMessage());
         }
 
-        if ($action === 'increase') {
-            $cartItems[$id]['quantity']++;
-        }
-
-        if ($action === 'decrease') {
-            $cartItems[$id]['quantity']--;
-            if ($cartItems[$id]['quantity'] <= 0) {
-                unset($cartItems[$id]);
-            }
-        }
-
-        session()->put('cart', $cartItems);
-
-        return back();
+        return $successMessage ? back()->with('success', $successMessage) : back();
     }
 }

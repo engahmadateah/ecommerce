@@ -1,0 +1,56 @@
+# Run everything with:  docker compose up -d --build
+# First time:           docker compose exec app php artisan key:generate --show   (copy it into .env as APP_KEY)
+# Make an admin:        docker compose exec app php artisan tinker
+x-app: &app
+  build: .
+  env_file: .env
+  environment:
+    DB_HOST: db
+    REDIS_HOST: redis
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_started
+  volumes:
+    - storage:/var/www/html/storage
+
+services:
+  app:
+    <<: *app
+    ports:
+      - "8080:80"
+    environment:
+      DB_HOST: db
+      REDIS_HOST: redis
+      RUN_MIGRATIONS: "1"
+
+  # Sends queued work in the background (set QUEUE_CONNECTION=redis in .env).
+  queue:
+    <<: *app
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+
+  # Runs the scheduled jobs: expiring unpaid orders, backups, stock alerts, cart reminders.
+  scheduler:
+    <<: *app
+    command: php artisan schedule:work
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-ecommerce}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+
+volumes:
+  dbdata:
+  storage:

@@ -1,1 +1,248 @@
 @import "tailwindcss";
+@plugin "@iconify/tailwind4";
+
+/* ──────────────────────────────────────────────────────────────
+   MyStore design system
+   Ink + Cobalt on a cool fog canvas. Saffron is reserved for deals.
+   Fonts and icons come from npm packages (see resources/js/app.js).
+   ────────────────────────────────────────────────────────────── */
+
+@theme {
+    --font-display: 'Bricolage Grotesque Variable', 'Readex Pro Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Plus Jakarta Sans Variable', 'Readex Pro Variable', ui-sans-serif, system-ui, sans-serif;
+
+    --color-ink: #0e1230;
+    --color-ink-2: #1a1f4a;
+    --color-fog: #f4f5fa;
+    --color-tile: #eceef7;
+    --color-line: #e2e5f0;
+    --color-mute: #5f6585;
+
+    --color-cobalt-50: #eef0ff;
+    --color-cobalt-100: #e0e4ff;
+    --color-cobalt-200: #c3caff;
+    --color-cobalt-300: #9aa6ff;
+    --color-cobalt-400: #6b79ff;
+    --color-cobalt-500: #3e4fff;
+    --color-cobalt-600: #2f3de6;
+    --color-cobalt-700: #2630bf;
+    --color-cobalt-900: #1c2278;
+
+    --color-saffron-300: #ffd166;
+    --color-saffron-400: #ffc247;
+    --color-saffron-500: #ffb224;
+    --color-saffron-600: #e8960b;
+
+    --color-coral-50: #fff0f2;
+    --color-coral-500: #ff4d6a;
+    --color-coral-600: #e63555;
+
+    --color-mint-50: #e8faf3;
+    --color-mint-500: #12b886;
+    --color-mint-600: #0a9c71;
+
+    --shadow-soft: 0 1px 2px rgb(14 18 48 / .04), 0 8px 24px -10px rgb(14 18 48 / .10);
+    --shadow-lift: 0 2px 4px rgb(14 18 48 / .05), 0 28px 56px -20px rgb(14 18 48 / .28);
+    --shadow-glow: 0 14px 30px -10px rgb(62 79 255 / .55);
+
+    --animate-marquee: marquee 38s linear infinite;
+    --animate-drift: drift 18s ease-in-out infinite alternate;
+    --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+    --animate-pop: pop .45s cubic-bezier(.2, 1.6, .4, 1);
+
+    @keyframes marquee { to { transform: translateX(-50%); } }
+    @keyframes drift {
+        from { transform: translate3d(0, 0, 0) scale(1); }
+        to   { transform: translate3d(4rem, 3rem, 0) scale(1.15); }
+    }
+    @keyframes shimmer {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+    @keyframes pop {
+        0%   { transform: scale(.6); }
+        60%  { transform: scale(1.25); }
+        100% { transform: scale(1); }
+    }
+}
+
+/* ── Base ─────────────────────────────────────────────────── */
+@layer base {
+    html { -webkit-text-size-adjust: 100%; scroll-padding-top: 8rem; }
+    html.lenis, html.lenis body { height: auto; }
+    .lenis.lenis-smooth { scroll-behavior: auto !important; }
+    .lenis.lenis-stopped { overflow: hidden; }
+
+    body {
+        @apply bg-fog font-sans text-ink antialiased;
+        font-feature-settings: 'ss01', 'cv11';
+        text-rendering: optimizeLegibility;
+    }
+
+    h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.022em; text-wrap: balance; }
+    p { text-wrap: pretty; }
+    /* Arabic joins letters: never track it out or in. */
+    [dir="rtl"] :where(h1, h2, h3, h4, .display, .tabular) { letter-spacing: 0; }
+
+    ::selection { background: var(--color-cobalt-500); color: #fff; }
+    :focus-visible { outline: 2px solid var(--color-cobalt-500); outline-offset: 3px; }
+    [x-cloak] { display: none !important; }
+
+    input[type="checkbox"], input[type="radio"] { accent-color: var(--color-cobalt-500); }
+    img { max-width: 100%; }
+    button { cursor: pointer; }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+}
+
+/* ── Components ───────────────────────────────────────────── */
+@layer components {
+    .container-x { @apply mx-auto w-full max-w-[1320px] px-5 sm:px-8; }
+    .section { @apply py-16 sm:py-24; }
+
+    /* Type scale */
+    .display { font-family: var(--font-display); font-weight: 700; font-size: clamp(2.5rem, 5.6vw, 5rem); line-height: .98; }
+    .h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(2rem, 4vw, 3.25rem); line-height: 1.05; }
+    .h2 { font-family: var(--font-display); font-weight: 650; font-size: clamp(1.6rem, 2.6vw, 2.25rem); line-height: 1.1; }
+    .h3 { font-family: var(--font-display); font-weight: 650; font-size: 1.25rem; line-height: 1.25; }
+    .lead { @apply text-lg leading-relaxed text-mute; }
+    [dir="rtl"] :where(.display, .h1, .h2) { line-height: 1.25; }
+
+    /* Buttons */
+    .btn {
+        @apply relative inline-flex h-12 shrink-0 select-none items-center justify-center gap-2 whitespace-nowrap rounded-full px-6 text-[15px] font-semibold transition duration-200 ease-out active:scale-[.97] disabled:pointer-events-none disabled:opacity-50;
+    }
+    .btn-brand { @apply bg-cobalt-500 text-white shadow-glow hover:-translate-y-0.5 hover:bg-cobalt-600; }
+    .btn-ink   { @apply bg-ink text-white hover:bg-ink-2; }
+    .btn-white { @apply bg-white text-ink hover:bg-cobalt-50; }
+    .btn-line  { @apply border border-line bg-white text-ink hover:border-ink; }
+    .btn-soft  { @apply bg-cobalt-50 text-cobalt-700 hover:bg-cobalt-100; }
+    .btn-ghost { @apply text-ink hover:bg-ink/5; }
+    .btn-danger { @apply bg-coral-50 text-coral-600 hover:bg-coral-500 hover:text-white; }
+    .btn-sm { @apply h-10 px-4 text-sm; }
+    .btn-lg { @apply h-14 px-8 text-base; }
+    .btn-icon { @apply h-11 w-11 p-0; }
+    .btn-block { @apply w-full; }
+
+    /* Forms */
+    .label { @apply mb-1.5 block text-sm font-semibold text-ink; }
+    .field {
+        @apply h-12 w-full rounded-2xl border border-line bg-white px-4 text-[15px] text-ink transition placeholder:text-mute/60 focus:border-cobalt-500 focus:outline-none focus:ring-4 focus:ring-cobalt-500/15;
+    }
+    textarea.field { @apply h-auto min-h-28 py-3 leading-relaxed; }
+    select.field {
+        appearance: none;
+        padding-inline-end: 2.75rem;
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1rem;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235f6585' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    }
+    [dir="rtl"] select.field { background-position: left 1rem center; }
+    .field-icon { @apply pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-xl text-mute; }
+    .field.has-icon { @apply ps-12; }
+    .field-error { @apply mt-1.5 text-sm font-medium text-coral-600; }
+    .field.is-invalid { @apply border-coral-500 focus:border-coral-500 focus:ring-coral-500/15; }
+
+    /* Surfaces */
+    .panel { @apply rounded-3xl border border-line bg-white p-6 shadow-soft sm:p-8; }
+    .panel-flat { @apply rounded-3xl border border-line bg-white p-6; }
+    .tile { @apply relative overflow-hidden bg-tile; }
+
+    /* Chips, badges */
+    .chip {
+        @apply inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-full border border-line bg-white px-4 text-sm font-semibold text-ink transition hover:border-ink;
+    }
+    .chip.is-active { @apply border-ink bg-ink text-white; }
+    .badge { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold leading-none; }
+    .badge-sale  { @apply bg-coral-500 text-white; }
+    .badge-deal  { @apply bg-saffron-500 text-ink; }
+    .badge-ok    { @apply bg-mint-50 text-mint-600; }
+    .badge-info  { @apply bg-cobalt-50 text-cobalt-700; }
+    .badge-muted { @apply bg-tile text-mute; }
+    .badge-ink   { @apply bg-ink text-white; }
+
+    /* Alerts */
+    .alert { @apply flex items-start gap-3 rounded-2xl p-4 text-sm font-medium; }
+    .alert-ok   { @apply bg-mint-50 text-mint-600; }
+    .alert-err  { @apply bg-coral-50 text-coral-600; }
+    .alert-info { @apply bg-cobalt-50 text-cobalt-700; }
+
+    /* Page header used by inner pages */
+    .page-head { @apply mx-auto max-w-[1320px] px-5 pb-8 pt-10 sm:px-8 sm:pt-14; }
+
+    /* Skeleton loader */
+    .skeleton {
+        background: linear-gradient(100deg, var(--color-tile) 30%, #f7f8fd 50%, var(--color-tile) 70%);
+        background-size: 200% 100%;
+        animation: var(--animate-shimmer);
+    }
+
+    /* Hero stage */
+    .aurora { @apply pointer-events-none absolute inset-0 overflow-hidden; }
+    .aurora i { @apply absolute block rounded-full animate-drift; filter: blur(90px); }
+    .aurora i:nth-child(1) { width: 44rem; height: 44rem; top: -20rem; inset-inline-end: -8rem; background: radial-gradient(circle at 35% 35%, #5566ff, transparent 66%); opacity: .75; }
+    .aurora i:nth-child(2) { width: 34rem; height: 34rem; bottom: -18rem; inset-inline-start: -6rem; background: radial-gradient(circle, #8b5cf6, transparent 66%); opacity: .5; animation-delay: -6s; }
+    .aurora i:nth-child(3) { width: 22rem; height: 22rem; bottom: -6rem; inset-inline-end: 22%; background: radial-gradient(circle, #ffb224, transparent 68%); opacity: .22; animation-delay: -11s; }
+    .grain::after {
+        content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .09; mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    .glass { background: rgb(255 255 255 / .10); border: 1px solid rgb(255 255 255 / .16); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+
+    /* Marquee (kept LTR so the loop is seamless in both writing directions) */
+    .marquee { @apply overflow-hidden; mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+    .marquee-track { @apply flex w-max animate-marquee; }
+    .marquee:hover .marquee-track { animation-play-state: paused; }
+
+    /* Swiper polish */
+    .swiper { @apply overflow-hidden; }
+    .swiper-pagination-bullet { background: var(--color-ink); opacity: .2; transition: width .25s, opacity .25s; border-radius: 999px; }
+    .swiper-pagination-bullet-active { opacity: 1; width: 1.5rem; background: var(--color-cobalt-500); }
+    .nav-btn { @apply grid h-11 w-11 place-items-center rounded-full border border-line bg-white text-xl text-ink shadow-soft transition hover:bg-ink hover:text-white disabled:pointer-events-none disabled:opacity-40; }
+    .swiper-button-disabled { @apply pointer-events-none opacity-40; }
+
+    /* Toasts */
+    #toast-root { @apply pointer-events-none fixed inset-x-0 top-4 z-[200] flex flex-col items-center gap-2 px-4; }
+    .toast { @apply pointer-events-auto flex max-w-md items-center gap-3 rounded-2xl bg-ink py-3 ps-4 pe-5 text-sm font-medium text-white shadow-lift; }
+    .toast > i { @apply shrink-0 text-xl; }
+    .toast[data-type="success"] > i { @apply text-mint-500; }
+    .toast[data-type="error"] > i { @apply text-coral-500; }
+    .toast[data-type="info"] > i { @apply text-cobalt-300; }
+
+    /* Cart bump */
+    .bump { animation: var(--animate-pop); }
+
+    /* Long-form text (policies, about) */
+    .prose-legal { @apply max-w-3xl text-[16px] leading-[1.85] text-mute; }
+    .prose-legal h2 { @apply mb-3 mt-12 text-2xl font-bold text-ink; }
+    .prose-legal h3 { @apply mb-2 mt-8 text-lg font-bold text-ink; }
+    .prose-legal p { @apply mb-4; }
+    .prose-legal ul { @apply mb-4 list-disc ps-6; }
+    .prose-legal li { @apply mb-1.5; }
+    .prose-legal a { @apply font-semibold text-cobalt-600 underline underline-offset-4; }
+    .prose-legal strong { @apply font-semibold text-ink; }
+
+    /* Table */
+    .table-clean { @apply w-full text-start text-sm; }
+    .table-clean th { @apply px-4 py-3 text-start text-xs font-bold text-mute; }
+    .table-clean td { @apply border-t border-line px-4 py-4; }
+}
+
+/* Heart pop used by the wishlist toggle */
+.is-wished { color: var(--color-coral-500); }
+
+/* Wishlist heart: two stacked icons, switched by aria-pressed (no JS class juggling) */
+[data-wishlist] .w-on { display: none; }
+[data-wishlist][aria-pressed="true"] .w-on { display: inline-block; }
+[data-wishlist][aria-pressed="true"] .w-off { display: none; }
+
+/* Horizontal scrollers without the scrollbar */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Product gallery thumbnails */
+[data-gallery-thumbs] .swiper-slide { opacity: .5; outline: 2px solid transparent; outline-offset: -2px; transition: opacity .2s, outline-color .2s; }
+[data-gallery-thumbs] .swiper-slide-thumb-active { opacity: 1; outline-color: var(--color-ink); }

@@ -37,7 +37,12 @@ class OrderResource extends Resource
             Select::make('user_id')
                 ->relationship('user', 'name')
                 ->searchable()
-                ->required(),
+                ->placeholder('Guest (no account)'),
+
+            TextInput::make('guest_email')
+                ->label('Guest e-mail')
+                ->email()
+                ->disabled(),
     
             TextInput::make('total_price')
                 ->numeric()
@@ -46,12 +51,15 @@ class OrderResource extends Resource
             Select::make('status')
                 ->options([
                     'pending' => 'Pending',
-                    'processing' => 'Processing',
+                    'paid' => 'Paid',
                     'shipped' => 'Shipped',
-                    'delivered' => 'Delivered',
+                    'completed' => 'Completed',
+                    'cancelled' => 'Cancelled',
+                    'refunded' => 'Refunded',
                 ])
                 ->required()
-                ->default('pending'),
+                ->default('pending')
+                ->helperText('"paid" and "cancelled" are normally set automatically by the payment flow, not chosen here.'),
     
         ]);
     }
@@ -66,7 +74,13 @@ class OrderResource extends Resource
     
             TextColumn::make('user.name')
                 ->label('Customer')
+                ->placeholder('Guest')
                 ->searchable(),
+
+            TextColumn::make('guest_email')
+                ->label('Guest e-mail')
+                ->searchable()
+                ->toggleable(),
     
             TextColumn::make('total_price')
                 ->money('USD'),
@@ -74,9 +88,11 @@ class OrderResource extends Resource
             BadgeColumn::make('status')
                 ->colors([
                     'warning' => 'pending',
-                    'primary' => 'processing',
+                    'success' => 'paid',
                     'info' => 'shipped',
-                    'success' => 'delivered',
+                    'primary' => 'completed',
+                    'danger' => 'cancelled',
+                    'gray' => 'refunded',
                 ]),
     
             TextColumn::make('created_at')

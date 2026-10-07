@@ -100,4 +100,15 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Shop owner address
+    |--------------------------------------------------------------------------
+    |
+    | Receives a notification for every new paid order. Falls back to the
+    | e-mail saved in the admin "Settings" page when empty.
+    */
+
+    'admin_address' => env('MAIL_ADMIN_ADDRESS'),
+
 ];

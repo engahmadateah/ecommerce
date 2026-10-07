@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Coupon extends Model
 {
+    use \App\Models\Concerns\LogsActivity;
+
     protected $fillable = [
         'code',
         'title',

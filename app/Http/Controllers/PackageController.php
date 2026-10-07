@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Package;
 use App\Services\CartService;
 
@@ -21,27 +20,10 @@ class PackageController extends Controller
 
         return view('packages.show', compact('package'));
     }
-    public function addToCart(Package $package)
+
+    public function addToCart(Package $package, CartService $cart)
     {
-        $cart = session()->get('cart', []);
-
-        $key = 'package_' . $package->id;
-
-        // إذا موجود زيد الكمية
-        if (isset($cart[$key])) {
-            $cart[$key]['quantity']++;
-        } else {
-
-            $cart[$key] = [
-                'name' => $package->name,
-                'price' => $package->price, // ✅ سعر البكج
-                'quantity' => 1,
-                'image' => $package->products->first()->image ?? null,
-                'is_package' => true // 🔥 مهم
-            ];
-        }
-
-        session()->put('cart', $cart);
+        $cart->addPackage($package);
 
         return back()->with('success', 'Bundle added 🔥');
     }

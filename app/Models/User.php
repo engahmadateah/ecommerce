@@ -2,13 +2,33 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 {
     use HasFactory, Notifiable;
+
+    protected static function booted(): void
+    {
+        // Deleting an account must not erase the shop's sales records (invoices, taxes, refunds).
+        // The orders stay, detached from the account and tied to the customer's e-mail instead.
+        static::deleting(function (User $user) {
+            Order::query()->where('user_id', $user->id)->update([
+                'user_id' => null,
+                'guest_email' => $user->email,
+            ]);
+        });
+    }
+
+    /** Only admins may open the Filament panel (/admin). */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->role === 'admin';
+    }
 
     /**
      * The attributes that are mass assignable.

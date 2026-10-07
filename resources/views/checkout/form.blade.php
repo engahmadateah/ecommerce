@@ -1,22 +1,32 @@
 <x-app-layout>
-<div class="max-w-4xl mx-auto py-10">
+@section('seo_robots', 'noindex,nofollow')
 
-    <h1 class="text-2xl font-bold mb-6">Shipping Information</h1>
+<div class="container-x py-10 sm:py-16">
+    <div class="mx-auto max-w-2xl">
+        <h1 class="h1">{{ __('Shipping Information') }}</h1>
 
-    <form method="POST" action="/checkout">
-        @csrf
+        <form method="POST" action="/checkout" class="panel mt-8 space-y-5">
+            @csrf
 
-        <input name="full_name" placeholder="Full Name" class="w-full mb-3 p-2 border" required>
-        <input name="phone" placeholder="Phone" class="w-full mb-3 p-2 border" required>
-        <input name="address" placeholder="Address" class="w-full mb-3 p-2 border" required>
-        <input name="city" placeholder="City" class="w-full mb-3 p-2 border" required>
-        <input name="country" placeholder="Country" class="w-full mb-3 p-2 border" required>
+            @guest
+                <div>
+                    <label for="email" class="label">{{ __('Email (for your order confirmation)') }}</label>
+                    <input id="email" type="email" name="email" value="{{ old('email') }}" class="field @error('email') is-invalid @enderror" required>
+                    @error('email')<p class="field-error">{{ $message }}</p>@enderror
+                    <p class="mt-2 text-sm text-mute">{{ __('Checking out as a guest.') }} <a href="{{ route('login') }}" class="font-bold text-ink underline underline-offset-4">{{ __('Log in') }}</a> {{ __('to earn loyalty points.') }}</p>
+                </div>
+            @endguest
 
-        <button class="bg-black text-white px-6 py-2 rounded">
-            Continue to Payment →
-        </button>
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div><label class="label">{{ __('Full Name') }}</label><input name="full_name" class="field" required></div>
+                <div><label class="label">{{ __('Phone') }}</label><input name="phone" class="field" required></div>
+                <div class="sm:col-span-2"><label class="label">{{ __('Address') }}</label><input name="address_line" class="field" required></div>
+                <div><label class="label">{{ __('City') }}</label><input name="city" class="field" required></div>
+                <div><label class="label">{{ __('Country') }}</label><input name="country" class="field" required></div>
+            </div>
 
-    </form>
-
+            <button type="submit" class="btn btn-brand btn-lg btn-block">{{ __('Continue to Payment') }}<i class="icon-[ph--arrow-right] text-xl rtl:-scale-x-100"></i></button>
+        </form>
+    </div>
 </div>
 </x-app-layout>

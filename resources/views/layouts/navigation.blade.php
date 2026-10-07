@@ -5,11 +5,11 @@
             <!-- Logo -->
             <div class="flex">
                 <a href="/" class="flex items-center font-bold text-xl">
-                    🛍️ MyStore
+                    <i class="icon-[ph--shopping-bag] me-1"></i> MyStore
                 </a>
 
                 <!-- Links -->
-                <div class="hidden sm:flex sm:items-center sm:ml-6 space-x-6">
+                <div class="hidden sm:flex sm:items-center sm:ms-6 space-x-6">
                     <a href="/" class="text-gray-700 hover:text-blue-500">Home</a>
 
                     <a href="/cart" class="text-gray-700 hover:text-blue-500">
@@ -19,11 +19,11 @@
             </div>
 
             <!-- Right Side -->
-            <div class="hidden sm:flex sm:items-center sm:ml-6">
+            <div class="hidden sm:flex sm:items-center sm:ms-6">
 
                 @auth
-                    <!-- ⭐ Points + Level -->
-                    <div class="flex items-center gap-3 mr-4">
+                    <!-- Points + Level -->
+                    <div class="flex items-center gap-3 me-4">
 
                         <!-- Level Badge -->
                         <span class="text-xs px-3 py-1 rounded-full text-white
@@ -36,7 +36,7 @@
 
                         <!-- Points -->
                         <span class="text-sm text-gray-600 font-semibold">
-                            ⭐ {{ auth()->user()->points ?? 0 }}
+                            <i class="icon-[ph--star-fill] text-yellow-400"></i> {{ auth()->user()->points ?? 0 }}
                         </span>
                     </div>
 
@@ -69,7 +69,7 @@
                     </x-dropdown>
 
                 @else
-                    <a href="{{ route('login') }}" class="text-blue-500 mr-4">Login</a>
+                    <a href="{{ route('login') }}" class="text-blue-500 me-4">Login</a>
                     <a href="{{ route('register') }}" class="text-blue-500">Register</a>
                 @endauth
 

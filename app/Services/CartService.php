@@ -2,142 +2,321 @@
 
 namespace App\Services;
 
+use App\Exceptions\CheckoutException;
+use App\Models\Package;
 use App\Models\Product;
+use App\Models\ProductVariant;
+use App\Services\Cart\AbandonedCartService;
+use App\Support\Money;
 
+/**
+ * The cart lives in the session, but the session only remembers *what* and
+ * *how many*. Names, prices, images and stock are always re-read from the
+ * database in getCart(), so the cart can never show or charge a stale price.
+ */
 class CartService
 {
-    // 🛒 Get cart
-    public function getCart()
+    private const SESSION_KEY = 'cart';
+    private const PACKAGE_PREFIX = 'package_';
+    private const VARIANT_PREFIX = 'variant_';
+
+    /** The cart exactly as stored in the session (prices may be stale). */
+    public function raw(): array
     {
-        return session()->get('cart', []);
+        return session()->get(self::SESSION_KEY, []);
     }
 
-    // 💾 Save cart
-    private function save($cart)
+    /** The cart synced with the database. Unavailable items are dropped. */
+    public function getCart(): array
     {
-        session()->put('cart', $cart);
+        $raw = $this->raw();
+
+        if ($raw === []) {
+            return [];
+        }
+
+        $synced = $this->sync($raw);
+        $this->save($synced, false); // just a refresh: not a customer action
+
+        return $synced;
     }
 
-    // ➕ Add to cart
-    public function add(Product $product, $quantity = 1)
+    /** True when prices, quantities or availability differ from what the session remembers. */
+    public function isStale(): bool
+    {
+        $raw = $this->raw();
+
+        return $this->signature($this->sync($raw)) !== $this->signature($raw);
+    }
+
+    /** @throws CheckoutException when the requested quantity exceeds stock */
+    public function add(Product $product, int $quantity = 1, ?int $variantId = null): void
+    {
+        if (! $product->is_published) {
+            throw CheckoutException::outOfStock($product->name);
+        }
+
+        $variants = $product->activeVariants()->get();
+
+        if ($variants->isNotEmpty()) {
+            $variant = $variants->firstWhere('id', $variantId);
+
+            if (! $variant) {
+                throw CheckoutException::optionRequired();
+            }
+
+            $variant->setRelation('product', $product);
+
+            $cart = $this->getCart();
+            $key = self::VARIANT_PREFIX . $variant->id;
+            $desired = ($cart[$key]['quantity'] ?? 0) + $quantity;
+
+            if ($variant->stock < $desired) {
+                throw CheckoutException::outOfStock($product->name . ' (' . $variant->name . ')');
+            }
+
+            $cart[$key] = $this->variantLine($product, $variant, $desired);
+            $this->save($cart);
+
+            return;
+        }
+
+        $cart = $this->getCart();
+        $desired = ($cart[$product->id]['quantity'] ?? 0) + $quantity;
+
+        if ($product->stock < $desired) {
+            throw CheckoutException::outOfStock($product->name);
+        }
+
+        $cart[$product->id] = $this->productLine($product, $desired);
+        $this->save($cart);
+    }
+
+    public function addPackage(Package $package): void
+    {
+        $package->loadMissing('products');
+
+        $cart = $this->getCart();
+        $key = self::PACKAGE_PREFIX . $package->id;
+        $quantity = ($cart[$key]['quantity'] ?? 0) + 1;
+
+        $cart[$key] = $this->packageLine($package, $quantity);
+        $this->save($cart);
+    }
+
+    /** @throws CheckoutException when the new quantity exceeds stock */
+    public function increase(string|int $key): void
     {
         $cart = $this->getCart();
 
-        // 🔥 أهم سطر (السعر مع الخصم)
-        $price = ($product->discount_price && $product->discount_price < $product->price)
-            ? $product->discount_price
-            : $product->price;
+        if (! isset($cart[$key])) {
+            return;
+        }
 
-        if (isset($cart[$product->id])) {
-            $cart[$product->id]['quantity'] += $quantity;
-        } else {
-            $cart[$product->id] = [
-                'id' => $product->id,
-                'name' => $product->name,
-                'price' => $price, // ✅ السعر بعد الخصم
-                'original_price' => $product->price, // 👈 للعرض فقط
-                'quantity' => $quantity,
-                'image' => $product->image,
-            ];
+        $item = $cart[$key];
+        $quantity = $item['quantity'] + 1;
+
+        if (empty($item['is_package']) && $quantity > ($item['stock'] ?? 0)) {
+            throw CheckoutException::outOfStock($item['name']);
+        }
+
+        $cart[$key]['quantity'] = $quantity;
+        $this->save($cart);
+    }
+
+    public function decrease(string|int $key): void
+    {
+        $cart = $this->getCart();
+
+        if (! isset($cart[$key])) {
+            return;
+        }
+
+        $cart[$key]['quantity']--;
+
+        if ($cart[$key]['quantity'] <= 0) {
+            unset($cart[$key]);
         }
 
         $this->save($cart);
     }
 
-    // ➖ Decrease quantity
-    public function decrease($productId)
+    public function remove(string|int $key): void
     {
-        $cart = $this->getCart();
+        $cart = $this->raw();
+        unset($cart[$key]);
 
-        if (!isset($cart[$productId])) return;
+        $this->save($cart);
+    }
 
-        $cart[$productId]['quantity']--;
+    public function clear(): void
+    {
+        session()->forget(self::SESSION_KEY);
 
-        if ($cart[$productId]['quantity'] <= 0) {
-            unset($cart[$productId]);
+        if ($user = auth()->user()) {
+            app(AbandonedCartService::class)->forget($user);
+        }
+    }
+
+    /**
+     * Puts saved items (cart key => quantity) back, e.g. from a reminder e-mail.
+     * Prices and stock are re-read from the database like always.
+     *
+     * @param array<string,int> $quantities
+     */
+    public function restore(array $quantities): void
+    {
+        $merged = $this->raw();
+
+        foreach ($quantities as $key => $quantity) {
+            $quantity = max(1, (int) $quantity);
+            $merged[$key] = ['quantity' => max($quantity, (int) ($merged[$key]['quantity'] ?? 0))];
         }
 
-        $this->save($cart);
+        $this->save($this->sync($merged));
     }
 
-    // 🔄 Update quantity
-    public function update($productId, $quantity)
+    // ------------------------------------------------------------------
+
+    private function sync(array $raw): array
     {
-        $cart = $this->getCart();
+        $productIds = [];
+        $packageIds = [];
+        $variantIds = [];
 
-        if (!isset($cart[$productId])) return;
-
-        if ($quantity <= 0) {
-            unset($cart[$productId]);
-        } else {
-            $cart[$productId]['quantity'] = $quantity;
+        foreach ($raw as $key => $item) {
+            if ($this->isPackageKey($key)) {
+                $packageIds[] = $this->packageId($key);
+            } elseif ($this->isVariantKey($key)) {
+                $variantIds[] = $this->variantId($key);
+            } else {
+                $productIds[] = (int) $key;
+            }
         }
 
-        $this->save($cart);
+        $products = Product::query()->published()
+            ->withCount(['variants as active_variants_count' => fn ($q) => $q->where('is_active', true)])
+            ->whereIn('id', $productIds)->get()->keyBy('id');
+        $variants = ProductVariant::query()->active()->with('product')->whereIn('id', $variantIds)->get()->keyBy('id');
+        $packages = Package::query()->with('products')->whereIn('id', $packageIds)->get()->keyBy('id');
+
+        $synced = [];
+
+        foreach ($raw as $key => $item) {
+            $quantity = max(1, (int) ($item['quantity'] ?? 1));
+
+            if ($this->isPackageKey($key)) {
+                $package = $packages->get($this->packageId($key));
+
+                if ($package) {
+                    $synced[$key] = $this->packageLine($package, $quantity);
+                }
+
+                continue;
+            }
+
+            if ($this->isVariantKey($key)) {
+                $variant = $variants->get($this->variantId($key));
+
+                if ($variant && $variant->product && $variant->product->is_published && $variant->stock > 0) {
+                    $synced[$key] = $this->variantLine($variant->product, $variant, min($quantity, $variant->stock));
+                }
+
+                continue;
+            }
+
+            $product = $products->get((int) $key);
+
+            // A product that got variants meanwhile can't be bought without choosing one.
+            if ($product && $product->active_variants_count === 0 && $product->stock > 0) {
+                $synced[$key] = $this->productLine($product, min($quantity, $product->stock));
+            }
+        }
+
+        return $synced;
     }
 
-    // ❌ Remove item
-    public function remove($productId)
+    private function productLine(Product $product, int $quantity): array
     {
-        $cart = $this->getCart();
-
-        unset($cart[$productId]);
-
-        $this->save($cart);
+        return [
+            'id' => $product->id,
+            'product_id' => $product->id,
+            'name' => $product->name,
+            'display_name' => $product->localized_name,
+            'price' => $product->currentPrice(),
+            'original_price' => (float) $product->price,
+            'quantity' => $quantity,
+            'stock' => (int) $product->stock,
+            'image' => $product->image,
+            'is_package' => false,
+        ];
     }
 
-    // 🧹 Clear cart
-    public function clear()
+    private function variantLine(Product $product, ProductVariant $variant, int $quantity): array
     {
-        session()->forget('cart');
+        return [
+            'id' => self::VARIANT_PREFIX . $variant->id,
+            'product_id' => $product->id,
+            'variant_id' => $variant->id,
+            'name' => $product->name . ' — ' . $variant->name,
+            'display_name' => $product->localized_name . ' — ' . $variant->name,
+            'price' => $variant->currentPrice(),
+            'original_price' => $variant->price !== null ? (float) $variant->price : (float) $product->price,
+            'quantity' => $quantity,
+            'stock' => (int) $variant->stock,
+            'image' => $product->image,
+            'is_package' => false,
+        ];
     }
 
-    // 💰 Total
-    public function total()
+    private function packageLine(Package $package, int $quantity): array
     {
-        return collect($this->getCart())
-            ->sum(fn ($item) => $item['price'] * $item['quantity']);
+        return [
+            'id' => self::PACKAGE_PREFIX . $package->id,
+            'package_id' => $package->id,
+            'name' => $package->name,
+            'price' => (float) $package->price,
+            'original_price' => (float) $package->price,
+            'quantity' => $quantity,
+            'image' => $package->products->first()?->image,
+            'is_package' => true,
+        ];
     }
 
-    // 💵 Subtotal per item
-    public function subtotal($productId)
+    /** What the customer would notice changing: price and quantity per line. */
+    private function signature(array $cart): array
     {
-        $cart = $this->getCart();
-
-        if (!isset($cart[$productId])) return 0;
-
-        return $cart[$productId]['price'] * $cart[$productId]['quantity'];
+        return collect($cart)
+            ->map(fn ($item) => [Money::toCents($item['price'] ?? 0), (int) ($item['quantity'] ?? 0)])
+            ->all();
     }
 
-    // ❤️ Save for later
-    public function saveForLater($productId)
+    private function save(array $cart, bool $remember = true): void
     {
-        $cart = $this->getCart();
-        $saved = session()->get('saved', []);
+        session()->put(self::SESSION_KEY, $cart);
 
-        if (!isset($cart[$productId])) return;
-
-        $saved[$productId] = $cart[$productId];
-
-        unset($cart[$productId]);
-
-        session()->put('saved', $saved);
-        $this->save($cart);
+        if ($remember && ($user = auth()->user())) {
+            app(AbandonedCartService::class)->remember($user, $cart);
+        }
     }
 
-    // 🔁 Move back to cart
-    public function moveToCart($productId)
+    private function isPackageKey(string|int $key): bool
     {
-        $cart = $this->getCart();
-        $saved = session()->get('saved', []);
+        return str_starts_with((string) $key, self::PACKAGE_PREFIX);
+    }
 
-        if (!isset($saved[$productId])) return;
+    private function isVariantKey(string|int $key): bool
+    {
+        return str_starts_with((string) $key, self::VARIANT_PREFIX);
+    }
 
-        $cart[$productId] = $saved[$productId];
+    private function variantId(string|int $key): int
+    {
+        return (int) substr((string) $key, strlen(self::VARIANT_PREFIX));
+    }
 
-        unset($saved[$productId]);
-
-        session()->put('saved', $saved);
-        $this->save($cart);
+    private function packageId(string|int $key): int
+    {
+        return (int) substr((string) $key, strlen(self::PACKAGE_PREFIX));
     }
 }

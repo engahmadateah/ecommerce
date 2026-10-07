@@ -1,315 +1,194 @@
-<nav class="sticky top-0 z-50 w-full bg-white/70 backdrop-blur-2xl border-b border-white/20 shadow-[0_8px_40px_rgba(0,0,0,0.08)]">
-
-    <div class="max-w-7xl mx-auto px-6 lg:px-8">
-
-        <div class="flex items-center justify-between h-24">
-
-            <!-- LEFT -->
-            <div class="flex items-center gap-14">
-
-                <!-- LOGO -->
-                <a href="/"
-                   class="group flex items-center gap-4 transition-all duration-500 hover:scale-105">
-
-                    <div class="relative">
-
-                        <div class="absolute inset-0 bg-blue-500/20 blur-2xl rounded-full scale-150 opacity-0 group-hover:opacity-100 transition duration-500"></div>
-
-                        <div class="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 p-[2px] shadow-xl shadow-blue-500/30">
-
-                            <div class="w-full h-full rounded-2xl bg-white flex items-center justify-center overflow-hidden">
-
-                                <img src="{{ asset('images/logo.png') }}"
-                                     class="w-9 h-9 object-contain transition duration-500 group-hover:rotate-12">
-
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col leading-none">
-
-                        <span class="text-3xl font-black tracking-tight bg-gradient-to-r from-blue-700 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                            MyStore
-                        </span>
-
-                        <span class="text-[10px] uppercase tracking-[0.35em] text-gray-400 font-bold mt-1">
-                            Premium Shopping
-                        </span>
-
-                    </div>
-                </a>
-
-                <!-- NAV LINKS -->
-                <div class="hidden xl:flex items-center gap-2">
-
-                    <!-- HOME -->
-                    <a href="/"
-                       class="group relative px-5 py-3 rounded-2xl overflow-hidden
-                       {{ request()->is('/') ? 'bg-blue-50 shadow-lg shadow-blue-100' : '' }}">
-
-                        <div class="absolute inset-0 bg-blue-50 scale-0 group-hover:scale-100 rounded-2xl transition duration-300"></div>
-
-                        <div class="relative flex items-center gap-2 font-semibold
-                        {{ request()->is('/') ? 'text-blue-700' : 'text-gray-700 group-hover:text-blue-700' }}">
-
-                            <i class="fa-solid fa-house text-sm transition duration-300 group-hover:-translate-y-1"></i>
-
-                            <span>Home</span>
-
-                        </div>
-                    </a>
-
-                    @auth
-
-                    <!-- CART -->
-                    <a href="/cart"
-                       class="group relative px-5 py-3 rounded-2xl overflow-hidden
-                       {{ request()->is('cart*') ? 'bg-blue-50 shadow-lg shadow-blue-100' : '' }}">
-
-                        <div class="absolute inset-0 bg-blue-50 scale-0 group-hover:scale-100 rounded-2xl transition duration-300"></div>
-
-                        <div class="relative flex items-center gap-2 font-semibold
-                        {{ request()->is('cart*') ? 'text-blue-700' : 'text-gray-700 group-hover:text-blue-700' }}">
-
-                            <i class="fa-solid fa-cart-shopping text-sm transition duration-300 group-hover:scale-125 group-hover:rotate-6"></i>
-
-                            <span>Cart</span>
-
-                            @if(count(session('cart', [])) > 0)
-                                <span class="flex items-center justify-center min-w-[20px] h-5 px-1 rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-black shadow-lg shadow-red-500/30 animate-pulse">
-                                    {{ count(session('cart', [])) }}
-                                </span>
-                            @endif
-
-                        </div>
-                    </a>
-
-                    <!-- ORDERS -->
-                    <a href="/orders"
-                       class="group relative px-5 py-3 rounded-2xl overflow-hidden
-                       {{ request()->is('orders*') ? 'bg-blue-50 shadow-lg shadow-blue-100' : '' }}">
-
-                        <div class="absolute inset-0 bg-blue-50 scale-0 group-hover:scale-100 rounded-2xl transition duration-300"></div>
-
-                        <div class="relative flex items-center gap-2 font-semibold
-                        {{ request()->is('orders*') ? 'text-blue-700' : 'text-gray-700 group-hover:text-blue-700' }}">
-
-                            <i class="fa-solid fa-box text-sm transition duration-300 group-hover:rotate-12"></i>
-
-                            <span>Orders</span>
-
-                        </div>
-                    </a>
-
-                    <!-- WISHLIST -->
-                    <a href="/wishlist"
-                       class="group relative px-5 py-3 rounded-2xl overflow-hidden
-                       {{ request()->is('wishlist*') ? 'bg-pink-50 shadow-lg shadow-pink-100' : '' }}">
-
-                        <div class="absolute inset-0 bg-pink-50 scale-0 group-hover:scale-100 rounded-2xl transition duration-300"></div>
-
-                        <div class="relative flex items-center gap-2 font-semibold
-                        {{ request()->is('wishlist*') ? 'text-pink-600' : 'text-gray-700 group-hover:text-pink-600' }}">
-
-                            <i class="fa-solid fa-heart text-sm transition duration-300 group-hover:scale-125 animate-pulse"></i>
-
-                            <span>Wishlist</span>
-
-                            @if(auth()->user()->wishlist->count() > 0)
-                                <span class="flex items-center justify-center min-w-[20px] h-5 px-1 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 text-white text-[10px] font-black shadow-lg shadow-pink-500/30">
-                                    {{ auth()->user()->wishlist->count() }}
-                                </span>
-                            @endif
-
-                        </div>
-                    </a>
-
-                    @endauth
-
-                    <!-- BUNDLES -->
-                    <a href="/packages"
-                       class="group relative px-5 py-3 rounded-2xl overflow-hidden
-                       {{ request()->is('packages*') ? 'bg-purple-50 shadow-lg shadow-purple-100' : '' }}">
-
-                        <div class="absolute inset-0 bg-purple-50 scale-0 group-hover:scale-100 rounded-2xl transition duration-300"></div>
-
-                        <div class="relative flex items-center gap-2 font-semibold
-                        {{ request()->is('packages*') ? 'text-purple-700' : 'text-gray-700 group-hover:text-purple-700' }}">
-
-                            <i class="fa-solid fa-layer-group text-sm transition duration-300 group-hover:rotate-180"></i>
-
-                            <span>Bundles</span>
-
-                        </div>
-                    </a>
-
-                    <!-- COUPONS -->
-                    <a href="/coupons"
-                       class="group relative px-5 py-3 rounded-2xl overflow-hidden
-                       {{ request()->is('coupons*') ? 'bg-emerald-50 shadow-lg shadow-emerald-100' : '' }}">
-
-                        <div class="absolute inset-0 bg-emerald-50 scale-0 group-hover:scale-100 rounded-2xl transition duration-300"></div>
-
-                        <div class="relative flex items-center gap-2 font-semibold
-                        {{ request()->is('coupons*') ? 'text-emerald-700' : 'text-gray-700 group-hover:text-emerald-700' }}">
-
-                            <i class="fa-solid fa-ticket text-sm transition duration-300 group-hover:-rotate-12"></i>
-
-                            <span>Coupons</span>
-
-                        </div>
-                    </a>
-
-                    <!-- CONTACT -->
-                    <a href="{{ route('contact') }}"
-                       class="group relative px-5 py-3 rounded-2xl overflow-hidden
-                       {{ request()->is('contact*') ? 'bg-cyan-50 shadow-lg shadow-cyan-100' : '' }}">
-
-                        <div class="absolute inset-0 bg-cyan-50 scale-0 group-hover:scale-100 rounded-2xl transition duration-300"></div>
-
-                        <div class="relative flex items-center gap-2 font-semibold
-                        {{ request()->is('contact*') ? 'text-cyan-700' : 'text-gray-700 group-hover:text-cyan-700' }}">
-
-                            <i class="fa-solid fa-envelope text-sm transition duration-300 group-hover:translate-x-1"></i>
-
-                            <span>Contact</span>
-
-                        </div>
-                    </a>
-
-                    <!-- DEALS -->
-                    <a href="{{ route('products.deals') }}"
-                       class="relative flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-bold shadow-xl transition duration-300 hover:scale-105
-                       {{ request()->is('deals*') ? 'bg-gradient-to-r from-rose-600 to-orange-600 ring-4 ring-rose-200' : 'bg-gradient-to-r from-rose-500 to-orange-500 shadow-rose-500/30' }}">
-
-                        <i class="fa-solid fa-bolt animate-bounce"></i>
-
-                        <span>Today's Deals</span>
-
-                    </a>
-
-                </div>
-
-            </div>
-
-            <!-- RIGHT -->
-            <div class="flex items-center gap-4">
-
-                @auth
-
-                    @php
-                        $user = auth()->user();
-                        $level = $user->level ?? 'bronze';
-                        $points = $user->points ?? 0;
-                    @endphp
-
-                    <!-- USER CARD -->
-                    <div class="hidden lg:flex items-center gap-4 bg-white/80 border border-gray-100 shadow-xl shadow-black/[0.03] rounded-2xl px-4 py-2 hover:scale-105 transition duration-300">
-
-                        <div class="relative">
-
-                            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
-
-                                <i class="fa-solid fa-user"></i>
-
-                            </div>
-
-                            <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white animate-pulse
-                                @if($level === 'gold') bg-yellow-400
-                                @elseif($level === 'silver') bg-gray-400
-                                @else bg-orange-400 @endif">
-                            </div>
-
-                        </div>
-
-                        <div class="flex flex-col">
-
-                            <span class="font-bold text-sm text-gray-800">
-                                {{ Str::limit($user->name, 14) }}
-                            </span>
-
-                            <div class="flex items-center gap-2 mt-1">
-
-                                <span class="flex items-center gap-1 text-[11px] font-black text-amber-500">
-
-                                    <i class="fa-solid fa-star text-[10px] animate-spin"></i>
-
-                                    {{ $points }}
-
-                                </span>
-
-                                <span class="text-[10px] uppercase font-black px-2 py-1 rounded-lg text-white
-                                    @if($level === 'gold') bg-gradient-to-r from-yellow-400 to-yellow-600
-                                    @elseif($level === 'silver') bg-gradient-to-r from-gray-300 to-gray-500
-                                    @else bg-gradient-to-r from-orange-400 to-rose-400 @endif">
-
-                                    {{ $level }}
-
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <!-- PROFILE -->
-                    <a href="{{ route('profile.edit') }}"
-                       class="group relative w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 flex items-center justify-center hover:scale-110 transition duration-300 shadow-lg shadow-blue-500/10">
-
-                        <i class="fa-solid fa-gear text-blue-600 group-hover:rotate-180 transition duration-500"></i>
-
-                    </a>
-
-                    <!-- LOGOUT -->
-                    <form method="POST" action="/logout">
-                        @csrf
-
-                        <button class="group relative w-12 h-12 rounded-2xl bg-gradient-to-br from-red-50 to-rose-50 border border-red-100 flex items-center justify-center hover:scale-110 transition duration-300 shadow-lg shadow-red-500/10">
-
-                            <i class="fa-solid fa-right-from-bracket text-red-500 group-hover:-translate-x-1 transition duration-300"></i>
-
-                        </button>
-
-                    </form>
-
-                @else
-
-                    <!-- GUEST BUTTONS -->
-                    <div class="flex items-center gap-3">
-
-                        <a href="/login"
-                           class="px-5 py-2.5 rounded-2xl text-sm font-bold text-gray-700 hover:bg-gray-100 transition duration-300">
-                            Login
-                        </a>
-
-                        <a href="/register"
-                           class="group relative overflow-hidden px-7 py-3 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white text-sm font-black shadow-2xl shadow-blue-500/30 hover:scale-105 transition duration-300">
-
-                            <span class="relative z-10">
-                                Create Account
-                            </span>
-
-                            <div class="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition duration-700"></div>
-
-                        </a>
-
-                    </div>
-
-                @endauth
-
-                <!-- MOBILE -->
-                <button class="xl:hidden w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200 transition duration-300 hover:rotate-90">
-
-                    <i class="fa-solid fa-bars text-lg"></i>
-
-                </button>
-
-            </div>
-
+@php
+    $cartCount = count(session('cart', []));
+    $user = auth()->user();
+    $wishlistCount = $user ? $user->wishlist()->count() : 0;
+    $brand = \App\Models\Setting::current()?->site_name ?: __('MyStore');
+    $returnDays = (int) config('shop.returns.days', 14);
+    $locale = app()->getLocale();
+    $currency = \App\Support\Currency::code();
+
+    $navLinks = [
+        ['label' => __('All products'), 'href' => route('home'), 'active' => request()->routeIs('home', 'dashboard') || request()->is('products*'), 'icon' => 'icon-[ph--squares-four]'],
+        ['label' => __("Today's deals"), 'href' => route('products.deals'), 'active' => request()->is('deals*'), 'icon' => 'icon-[ph--fire-fill]', 'deal' => true],
+        ['label' => __('Bundles'), 'href' => route('packages.index'), 'active' => request()->is('packages*'), 'icon' => 'icon-[ph--stack-simple]'],
+        ['label' => __('Coupons'), 'href' => route('coupons.index'), 'active' => request()->is('coupons*'), 'icon' => 'icon-[ph--ticket]'],
+        ['label' => __('Contact'), 'href' => route('contact'), 'active' => request()->is('contact*'), 'icon' => 'icon-[ph--chat-circle-dots]'],
+    ];
+@endphp
+
+<header x-data="{ open: false, lang: false, account: false, scrolled: false }"
+        x-init="$watch('open', v => { v ? window.lenis?.stop() : window.lenis?.start(); })"
+        @scroll.window.passive="scrolled = window.scrollY > 6"
+        @keydown.escape.window="open = false; lang = false; account = false"
+        data-cart-count="{{ $cartCount }}"
+        class="sticky -top-9 z-50">
+
+    {{-- Announcement strip (scrolls away; the main bar below stays) --}}
+    <div class="h-9 bg-ink text-xs text-white/80 sm:text-[13px]">
+        <div class="container-x flex h-full items-center justify-center gap-8">
+            <span class="inline-flex items-center gap-2"><i class="icon-[ph--lock-simple] text-base text-cobalt-300"></i>{{ __('Encrypted checkout on every order') }}</span>
+            <span class="hidden items-center gap-2 sm:inline-flex"><i class="icon-[ph--truck] text-base text-cobalt-300"></i>{{ __('Real-time order tracking') }}</span>
+            <span class="hidden items-center gap-2 lg:inline-flex"><i class="icon-[ph--arrow-counter-clockwise] text-base text-cobalt-300"></i>{{ __('Easy :days-day returns', ['days' => $returnDays]) }}</span>
         </div>
-
     </div>
 
-</nav>
+    {{-- Main bar --}}
+    <div class="border-b border-line/80 backdrop-blur-xl transition-[background-color,box-shadow] duration-300"
+         :class="scrolled ? 'bg-white/85 shadow-[0_10px_30px_-20px_rgb(14_18_48/.45)]' : 'bg-fog/80'">
+        <div class="container-x flex h-[68px] items-center gap-2 sm:gap-3 xl:gap-5">
+
+            <button type="button" class="btn btn-ghost btn-icon -ms-2 text-[22px] xl:hidden" @click="open = !open" :aria-expanded="open" aria-label="{{ __('Menu') }}">
+                <i x-show="!open" class="icon-[ph--list]"></i>
+                <i x-show="open" x-cloak class="icon-[ph--x]"></i>
+            </button>
+
+            <a href="{{ route('home') }}" class="group flex shrink-0 items-center gap-2.5" aria-label="{{ $brand }}">
+                <span class="grid h-10 w-10 place-items-center rounded-2xl bg-linear-to-br from-cobalt-500 to-[#7c5cff] text-xl text-white shadow-glow transition duration-300 group-hover:-rotate-6">
+                    <i class="icon-[ph--handbag-fill]"></i>
+                </span>
+                <span class="font-display text-[22px] font-bold leading-none tracking-tight">{{ $brand }}</span>
+            </a>
+
+            {{-- Primary links (wide screens) --}}
+            <nav class="hidden items-center gap-0.5 xl:flex" aria-label="Primary">
+                @foreach ($navLinks as $link)
+                    <a href="{{ $link['href'] }}"
+                       @if ($link['active']) aria-current="page" @endif
+                       class="inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[13.5px] font-semibold transition
+                              {{ $link['active'] ? 'bg-ink text-white' : (!empty($link['deal']) ? 'text-coral-600 hover:bg-coral-50' : 'text-mute hover:bg-white hover:text-ink') }}">
+                        @if (!empty($link['deal']))<i class="{{ $link['icon'] }} text-base"></i>@endif
+                        {{ $link['label'] }}
+                    </a>
+                @endforeach
+            </nav>
+
+            {{-- Search --}}
+            <form action="{{ route('home') }}" method="GET" role="search" class="relative mx-auto hidden w-full max-w-xl flex-1 md:block xl:max-w-sm 2xl:max-w-md">
+                <i class="icon-[ph--magnifying-glass] pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-xl text-mute"></i>
+                <input type="text" name="search" value="{{ request('search') }}" data-search-input autocomplete="off"
+                       placeholder="{{ __('Search for products…') }}" aria-label="{{ __('Search for products…') }}"
+                       class="field h-11 rounded-full bg-white/90 ps-12 pe-10">
+                <kbd class="pointer-events-none absolute end-4 top-1/2 hidden -translate-y-1/2 rounded-md border border-line bg-fog px-1.5 py-0.5 text-[11px] font-bold text-mute lg:block">/</kbd>
+            </form>
+
+            <div class="ms-auto flex items-center gap-0.5 sm:gap-1 md:ms-0">
+
+                {{-- Language + currency --}}
+                <div class="relative hidden sm:block" @click.outside="lang = false">
+                    <button type="button" class="btn btn-ghost btn-sm gap-1.5 px-3" @click="lang = !lang; account = false" :aria-expanded="lang" aria-label="{{ __('Language') }} / {{ __('Currency') }}">
+                        <i class="icon-[ph--globe-simple] text-lg"></i>
+                        <span class="hidden text-[13px] font-bold 2xl:inline">{{ strtoupper($locale) }}<span class="font-semibold text-mute"> · {{ $currency }}</span></span>
+                    </button>
+                    <div x-show="lang" x-cloak x-transition.opacity.scale.95.origin.top.duration.150ms
+                         class="absolute end-0 top-full mt-2 w-72 rounded-3xl border border-line bg-white p-4 shadow-lift">
+                        <p class="mb-2 text-xs font-bold text-mute">{{ __('Language') }}</p>
+                        <div class="mb-4 flex flex-wrap gap-2">
+                            @foreach (config('shop.locales') as $code => $label)
+                                <a href="{{ route('locale', $code) }}" hreflang="{{ $code }}" class="chip h-9 {{ $locale === $code ? 'is-active' : '' }}">{{ $label }}</a>
+                            @endforeach
+                        </div>
+                        <p class="mb-2 text-xs font-bold text-mute">{{ __('Currency') }}</p>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach (array_keys(config('shop.currencies')) as $code)
+                                <a href="{{ route('currency', $code) }}" class="chip h-9 {{ $currency === $code ? 'is-active' : '' }}">{{ $code }}</a>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                @auth
+                    <a href="/wishlist" class="btn btn-ghost btn-icon relative hidden text-[22px] sm:inline-flex" aria-label="{{ __('Wishlist') }}">
+                        <i class="icon-[ph--heart]"></i>
+                        <span data-wishlist-badge @if ($wishlistCount <= 0) hidden @endif class="absolute -end-0.5 -top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-coral-500 px-1 text-[11px] font-bold leading-none text-white ring-2 ring-fog">{{ $wishlistCount }}</span>
+                    </a>
+                    <a href="/orders" class="btn btn-ghost btn-icon hidden text-[22px] md:inline-flex" aria-label="{{ __('Orders') }}"><i class="icon-[ph--package]"></i></a>
+                @endauth
+
+                <a href="/cart" data-cart-target class="btn btn-ghost btn-icon relative text-[22px]" aria-label="{{ __('Cart') }}">
+                    <i class="icon-[ph--handbag]"></i>
+                    <span data-cart-badge @if ($cartCount <= 0) hidden @endif class="absolute -end-0.5 -top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-cobalt-500 px-1 text-[11px] font-bold leading-none text-white ring-2 ring-fog">{{ $cartCount }}</span>
+                </a>
+
+                @auth
+                    @php
+                        $level = $user->level ?? 'bronze';
+                        $initials = collect(explode(' ', trim($user->name)))->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode('');
+                        $levelDot = ['gold' => 'bg-[#f0c34c]', 'silver' => 'bg-[#b9c4cd]', 'bronze' => 'bg-[#d98b53]'][$level] ?? 'bg-[#d98b53]';
+                    @endphp
+                    <div class="relative ms-1" @click.outside="account = false">
+                        <button type="button" class="relative grid h-11 w-11 place-items-center rounded-full bg-ink text-sm font-bold text-white transition hover:bg-ink-2"
+                                @click="account = !account; lang = false" :aria-expanded="account" aria-label="{{ __('Profile') }}">
+                            {{ mb_strtoupper($initials) }}
+                            <span class="absolute -bottom-0.5 -end-0.5 h-3.5 w-3.5 rounded-full ring-2 ring-fog {{ $levelDot }}"></span>
+                        </button>
+                        <div x-show="account" x-cloak x-transition.opacity.scale.95.origin.top.duration.150ms
+                             class="absolute end-0 top-full mt-2 w-72 rounded-3xl border border-line bg-white p-2 shadow-lift">
+                            <div class="mb-1 rounded-2xl bg-fog p-4">
+                                <p class="truncate font-display text-base font-bold">{{ $user->name }}</p>
+                                <p class="mt-0.5 truncate text-[13px] text-mute">{{ $user->email }}</p>
+                                <p class="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs font-bold">
+                                    <span class="h-2 w-2 rounded-full {{ $levelDot }}"></span>{{ __(ucfirst($level)) }} · {{ number_format($user->points ?? 0) }} {{ __('pts') }}
+                                </p>
+                            </div>
+                            <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition hover:bg-fog"><i class="icon-[ph--user] text-lg text-mute"></i>{{ __('Profile') }}</a>
+                            <a href="/orders" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition hover:bg-fog"><i class="icon-[ph--package] text-lg text-mute"></i>{{ __('My orders') }}</a>
+                            <a href="/wishlist" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition hover:bg-fog"><i class="icon-[ph--heart] text-lg text-mute"></i>{{ __('Wishlist') }}</a>
+                            <form method="POST" action="/logout" class="mt-1 border-t border-line pt-1">
+                                @csrf
+                                <button type="submit" class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-start text-sm font-semibold text-coral-600 transition hover:bg-coral-50"><i class="icon-[ph--sign-out] text-lg rtl:-scale-x-100"></i>{{ __('Log out') }}</button>
+                            </form>
+                        </div>
+                    </div>
+                @else
+                    <a href="/login" class="btn btn-ink btn-sm hidden sm:inline-flex 2xl:btn-ghost">{{ __('Log in') }}</a>
+                    <a href="/register" class="btn btn-ink btn-sm hidden 2xl:inline-flex">{{ __('Create account') }}</a>
+                    <a href="/login" class="btn btn-ghost btn-icon text-[22px] sm:hidden" aria-label="{{ __('Log in') }}"><i class="icon-[ph--user]"></i></a>
+                @endauth
+            </div>
+        </div>
+    </div>
+
+    {{-- Mobile / tablet panel --}}
+    <div x-show="open" x-cloak
+         x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         data-lenis-prevent
+         class="absolute inset-x-0 top-full max-h-[calc(100dvh-6.5rem)] overflow-y-auto border-b border-line bg-white shadow-lift xl:hidden">
+        <div class="container-x py-5">
+            <form action="{{ route('home') }}" method="GET" role="search" class="relative mb-4 md:hidden">
+                <i class="icon-[ph--magnifying-glass] pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-xl text-mute"></i>
+                <input type="text" name="search" value="{{ request('search') }}" data-search-input autocomplete="off" placeholder="{{ __('Search for products…') }}" class="field ps-12">
+            </form>
+
+            <nav class="grid gap-1 sm:grid-cols-2" aria-label="Mobile">
+                @foreach ($navLinks as $link)
+                    <a href="{{ $link['href'] }}" class="flex items-center gap-3 rounded-2xl px-4 py-3.5 text-[15px] font-semibold transition {{ $link['active'] ? 'bg-ink text-white' : 'hover:bg-fog' }}">
+                        <i class="{{ $link['icon'] }} text-xl {{ $link['active'] ? '' : (!empty($link['deal']) ? 'text-coral-500' : 'text-mute') }}"></i>{{ $link['label'] }}
+                    </a>
+                @endforeach
+                @auth
+                    <a href="/wishlist" class="flex items-center gap-3 rounded-2xl px-4 py-3.5 text-[15px] font-semibold transition hover:bg-fog"><i class="icon-[ph--heart] text-xl text-mute"></i>{{ __('Wishlist') }}</a>
+                    <a href="/orders" class="flex items-center gap-3 rounded-2xl px-4 py-3.5 text-[15px] font-semibold transition hover:bg-fog"><i class="icon-[ph--package] text-xl text-mute"></i>{{ __('My orders') }}</a>
+                @endauth
+                <a href="{{ route('orders.track.form') }}" class="flex items-center gap-3 rounded-2xl px-4 py-3.5 text-[15px] font-semibold transition hover:bg-fog"><i class="icon-[ph--map-pin-line] text-xl text-mute"></i>{{ __('Track an order') }}</a>
+            </nav>
+
+            <div class="mt-5 flex flex-wrap items-center gap-2 border-t border-line pt-5">
+                @foreach (config('shop.locales') as $code => $label)
+                    <a href="{{ route('locale', $code) }}" hreflang="{{ $code }}" class="chip h-9 {{ $locale === $code ? 'is-active' : '' }}">{{ $label }}</a>
+                @endforeach
+                <span class="mx-1 h-5 w-px bg-line"></span>
+                @foreach (array_keys(config('shop.currencies')) as $code)
+                    <a href="{{ route('currency', $code) }}" class="chip h-9 {{ $currency === $code ? 'is-active' : '' }}">{{ $code }}</a>
+                @endforeach
+            </div>
+
+            @guest
+                <div class="mt-5 grid grid-cols-2 gap-3">
+                    <a href="/login" class="btn btn-line">{{ __('Log in') }}</a>
+                    <a href="/register" class="btn btn-ink">{{ __('Create account') }}</a>
+                </div>
+            @endguest
+        </div>
+    </div>
+</header>

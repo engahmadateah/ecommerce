@@ -38,6 +38,8 @@ TextInput::make('name')
 TextInput::make('slug')
 ->required()
 ->disabled(),
+
+\App\Filament\Support\TranslationFields::section(false),
             ]);
     }
 
